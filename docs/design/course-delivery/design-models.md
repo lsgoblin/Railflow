@@ -42,7 +42,7 @@
 
 建议以 `plans / visit_nodes / plan_snapshots / simulation_records` 保存用户数据，以版本化数据表保存站点、车次、停站时刻、服务日与轨迹。较大的 shape 可按 shapeId 与版本索引读取，不在每个行程复制全国几何。方案快照保存必要区间及来源引用，版本删除/保留策略未定前不得声称旧结果可永久恢复。
 
-建议唯一键覆盖 `(datasetVersion, tripId, referenceServiceDate)` 的运行身份和 `(ownerId, operation, clientRequestId)` 的写请求身份；实际表名、字段、索引与迁移交后续评审。上文建议的用户数据表与迁移尚未实施；MVP 的 schema、九文件导入与几何服务见 §6、§7 与 [MVP 契约](../../design/mvp-contract.md)，两者不混同。
+建议唯一键覆盖 `(datasetVersion, tripId, referenceServiceDate)` 的运行身份和 `(ownerId, operation, clientRequestId)` 的写请求身份；实际表名、字段、索引与迁移交后续评审。上文建议的用户数据表与迁移尚未实施；MVP 的 schema、九文件导入与几何服务见 §6、§7 与 [MVP 契约](../mvp-contract.md)，两者不混同。
 
 ## 2. UC-01 城市组线与历史方案计算
 
