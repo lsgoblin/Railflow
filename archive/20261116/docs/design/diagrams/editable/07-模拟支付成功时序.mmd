@@ -1,0 +1,16 @@
+sequenceDiagram
+    title 模拟支付：截止前成功路径
+    participant user
+    participant webApp
+    participant paymentService
+    participant mysql
+    user->>webApp: 确认模拟支付
+    webApp->>paymentService: POST /api/orders/{id}/pay
+    paymentService->>mysql: 校验当前用户为订单属主
+    mysql-->>paymentService: 订单和锁座截止时间
+    paymentService->>mysql: 开始事务，条件更新为 CONFIRMED
+    mysql-->>paymentService: PENDING 且未到期，影响一行
+    paymentService->>mysql: 库存 lockedSeats 减一、confirmedSeats 加一
+    paymentService->>mysql: 写入支付记录，提交事务
+    paymentService-->>webApp: 支付成功与最新订单
+    webApp-->>user: 展示已确认状态

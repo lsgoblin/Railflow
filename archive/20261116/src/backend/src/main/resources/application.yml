@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: railflow-server
+  profiles:
+    default: h2
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd'T'HH:mm:ssXXX
+  sql:
+    init:
+      mode: never
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        same-site: lax
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.railflow
+  configuration:
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com.railflow: INFO

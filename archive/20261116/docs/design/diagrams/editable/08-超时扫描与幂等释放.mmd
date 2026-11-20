@@ -1,0 +1,22 @@
+flowchart TD
+    trigger(["每 30 秒触发扫描"])
+    findOrders["读取已到期 PENDING 候选订单"]
+    nextOrder{"还有候选订单？"}
+    transaction["为当前订单开启事务"]
+    expireOrder["条件更新 PENDING 为 EXPIRED"]
+    changed{"影响一行？"}
+    releaseSeat["对应库存 lockedSeats 减一"]
+    audit["写入超时日志并提交"]
+    skip["结束当前事务，不释放席位"]
+    done(["等待下一次扫描"])
+    trigger --> findOrders
+    findOrders --> nextOrder
+    nextOrder -->|"有"| transaction
+    transaction --> expireOrder
+    expireOrder --> changed
+    changed -->|"是"| releaseSeat
+    releaseSeat --> audit
+    audit --> nextOrder
+    changed -->|"否：状态已改变"| skip
+    skip --> nextOrder
+    nextOrder -->|"无"| done

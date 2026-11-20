@@ -1,0 +1,981 @@
+{
+  "metadata": {
+    "schemaVersion": 1,
+    "purpose": "UI_STATE_ONLY",
+    "synthetic": true,
+    "isRealRailEvidence": false,
+    "timeZone": "Asia/Shanghai",
+    "now": "2026-11-16T08:00:00+08:00",
+    "datasetVersion": "fixture-history-2025",
+    "dateMapping": "FIXTURE_ONLY_EXPLICIT_CALENDAR",
+    "mapMode": "SCHEMATIC_TEST_ONLY"
+  },
+  "base": {
+    "nodes": [
+      {
+        "id": "node-01",
+        "cityId": "fx.city.1",
+        "cityName": "北京",
+        "arrivalStationId": "fx.station.1",
+        "departureStationId": "fx.station.1",
+        "stayDays": null
+      },
+      {
+        "id": "node-02",
+        "cityId": "fx.city.2",
+        "cityName": "南京",
+        "arrivalStationId": "fx.station.2",
+        "departureStationId": "fx.station.2",
+        "stayDays": 1
+      },
+      {
+        "id": "node-03",
+        "cityId": "fx.city.3",
+        "cityName": "上海",
+        "arrivalStationId": "fx.station.3",
+        "departureStationId": "fx.station.3",
+        "stayDays": 1
+      },
+      {
+        "id": "node-04",
+        "cityId": "fx.city.4",
+        "cityName": "南宁",
+        "arrivalStationId": "fx.station.4",
+        "departureStationId": "fx.station.4",
+        "stayDays": 1
+      },
+      {
+        "id": "node-05",
+        "cityId": "fx.city.5",
+        "cityName": "郑州",
+        "arrivalStationId": "fx.station.5",
+        "departureStationId": "fx.station.5",
+        "stayDays": 1
+      },
+      {
+        "id": "node-06",
+        "cityId": "fx.city.6",
+        "cityName": "西安",
+        "arrivalStationId": "fx.station.6",
+        "departureStationId": "fx.station.6",
+        "stayDays": 1
+      },
+      {
+        "id": "node-07",
+        "cityId": "fx.city.7",
+        "cityName": "兰州",
+        "arrivalStationId": "fx.station.7",
+        "departureStationId": "fx.station.7",
+        "stayDays": 1
+      },
+      {
+        "id": "node-08",
+        "cityId": "fx.city.8",
+        "cityName": "西宁",
+        "arrivalStationId": "fx.station.8",
+        "departureStationId": "fx.station.8",
+        "stayDays": 1
+      },
+      {
+        "id": "node-09",
+        "cityId": "fx.city.9",
+        "cityName": "银川",
+        "arrivalStationId": "fx.station.9",
+        "departureStationId": "fx.station.9",
+        "stayDays": 1
+      },
+      {
+        "id": "node-10",
+        "cityId": "fx.city.10",
+        "cityName": "成都",
+        "arrivalStationId": "fx.station.10",
+        "departureStationId": "fx.station.10",
+        "stayDays": 1
+      },
+      {
+        "id": "node-11",
+        "cityId": "fx.city.11",
+        "cityName": "昆明",
+        "arrivalStationId": "fx.station.11",
+        "departureStationId": "fx.station.11",
+        "stayDays": 1
+      },
+      {
+        "id": "node-12",
+        "cityId": "fx.city.12",
+        "cityName": "乌鲁木齐",
+        "arrivalStationId": "fx.station.12",
+        "departureStationId": "fx.station.12",
+        "stayDays": null
+      }
+    ],
+    "stations": [
+      {
+        "id": "fx.station.1",
+        "cityId": "fx.city.1",
+        "name": "北京测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.2",
+        "cityId": "fx.city.2",
+        "name": "南京测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.3",
+        "cityId": "fx.city.3",
+        "name": "上海测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.4",
+        "cityId": "fx.city.4",
+        "name": "南宁测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.5",
+        "cityId": "fx.city.5",
+        "name": "郑州测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.6",
+        "cityId": "fx.city.6",
+        "name": "西安测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.7",
+        "cityId": "fx.city.7",
+        "name": "兰州测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.8",
+        "cityId": "fx.city.8",
+        "name": "西宁测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.9",
+        "cityId": "fx.city.9",
+        "name": "银川测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.10",
+        "cityId": "fx.city.10",
+        "name": "成都测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.11",
+        "cityId": "fx.city.11",
+        "name": "昆明测试站",
+        "source": "fixture-local"
+      },
+      {
+        "id": "fx.station.12",
+        "cityId": "fx.city.12",
+        "name": "乌鲁木齐测试站",
+        "source": "fixture-local"
+      }
+    ],
+    "mapPaths": [
+      {
+        "id": "schematic-main",
+        "coordinateSystem": "fixture-normalized",
+        "points": [
+          [
+            0.1,
+            0.1
+          ],
+          [
+            0.4,
+            0.3
+          ],
+          [
+            0.7,
+            0.4
+          ],
+          [
+            0.9,
+            0.8
+          ]
+        ],
+        "isRealRailGeometry": false
+      },
+      {
+        "id": "schematic-alt",
+        "coordinateSystem": "fixture-normalized",
+        "points": [
+          [
+            0.1,
+            0.1
+          ],
+          [
+            0.4,
+            0.3
+          ],
+          [
+            0.55,
+            0.65
+          ],
+          [
+            0.9,
+            0.8
+          ]
+        ],
+        "isRealRailGeometry": false
+      },
+      {
+        "id": "schematic-reverse",
+        "coordinateSystem": "fixture-normalized",
+        "points": [
+          [
+            0.9,
+            0.8
+          ],
+          [
+            0.7,
+            0.4
+          ],
+          [
+            0.4,
+            0.3
+          ],
+          [
+            0.1,
+            0.1
+          ]
+        ],
+        "isRealRailGeometry": false
+      }
+    ],
+    "users": [
+      {
+        "id": "fx.user.A",
+        "displayName": "测试账号甲"
+      },
+      {
+        "id": "fx.user.B",
+        "displayName": "测试账号乙"
+      }
+    ]
+  },
+  "scenarios": {
+    "F01": {
+      "name": "SEARCH_IME",
+      "events": [
+        {
+          "type": "compositionstart"
+        },
+        {
+          "type": "input",
+          "value": "beijing",
+          "isComposing": true
+        },
+        {
+          "type": "keydown",
+          "key": "Enter",
+          "isComposing": true
+        },
+        {
+          "type": "compositionend",
+          "value": "北京"
+        },
+        {
+          "type": "input",
+          "value": "北京",
+          "isComposing": false
+        },
+        {
+          "type": "wait",
+          "milliseconds": 250
+        }
+      ],
+      "response": [
+        {
+          "id": "fx.city.1",
+          "type": "city",
+          "label": "北京",
+          "source": "local"
+        }
+      ],
+      "expected": {
+        "queriesDuringComposition": 0,
+        "queriesAfterCommit": 1,
+        "addedNodesBeforeExplicitSelection": 0,
+        "query": "北京"
+      },
+      "escapeEvents": [
+        {
+          "type": "compositionstart"
+        },
+        {
+          "type": "input",
+          "value": "bei",
+          "isComposing": true
+        },
+        {
+          "type": "keydown",
+          "key": "Escape",
+          "isComposing": true
+        }
+      ],
+      "escapeExpected": {
+        "appClearsInput": false,
+        "appClosesPanel": false
+      }
+    },
+    "F02": {
+      "name": "NATURAL_DAY_AND_CROSS_DAY",
+      "businessDate": "2026-11-16",
+      "stayDays": 1,
+      "legs": [
+        {
+          "id": "fx.leg.1",
+          "runId": "fx.run.1@2026-11-16",
+          "trainCode": "测试A",
+          "fromStationId": "fx.station.1",
+          "toStationId": "fx.station.2",
+          "departure": "2026-11-16T23:40:00+08:00",
+          "arrival": "2026-11-17T01:10:00+08:00",
+          "historicalPrice": "50.00",
+          "seat": "测试席别"
+        },
+        {
+          "id": "fx.leg.2",
+          "runId": "fx.run.2@2026-11-18",
+          "trainCode": "测试B",
+          "fromStationId": "fx.station.2",
+          "toStationId": "fx.station.3",
+          "departure": "2026-11-18T08:00:00+08:00",
+          "arrival": "2026-11-18T10:30:00+08:00",
+          "historicalPrice": null,
+          "seat": "测试席别"
+        }
+      ],
+      "expected": {
+        "firstLegDayOffset": 1,
+        "nextEarliestDepartureDate": "2026-11-18",
+        "totalMinutes": 2090,
+        "knownTotal": "50.00",
+        "missingPriceLegs": 1,
+        "completeTotal": null,
+        "changes": 1
+      },
+      "sameRunSplit": {
+        "runIds": [
+          "fx.same-run@2026-11-16",
+          "fx.same-run@2026-11-16"
+        ],
+        "expectedChanges": 0
+      }
+    },
+    "F03": {
+      "name": "CANDIDATE_COMPARISON",
+      "planNodeIds": [
+        "node-01",
+        "node-12"
+      ],
+      "responseOrder": [
+        "candidate-direct",
+        "candidate-transfer-a",
+        "candidate-transfer-b"
+      ],
+      "candidates": [
+        {
+          "id": "candidate-direct",
+          "changes": 0,
+          "totalMinutes": 1200,
+          "knownTotal": "400.00",
+          "missingPriceLegs": 0,
+          "geometryRef": "schematic-main",
+          "timingState": "matched",
+          "priceState": "complete"
+        },
+        {
+          "id": "candidate-transfer-a",
+          "changes": 1,
+          "totalMinutes": 900,
+          "knownTotal": "260.00",
+          "missingPriceLegs": 0,
+          "geometryRef": "schematic-alt",
+          "timingState": "matched",
+          "priceState": "complete"
+        },
+        {
+          "id": "candidate-transfer-b",
+          "changes": 1,
+          "totalMinutes": 800,
+          "knownTotal": "120.00",
+          "missingPriceLegs": 1,
+          "geometryRef": null,
+          "timingState": "matched",
+          "priceState": "partial"
+        }
+      ],
+      "selectedId": "candidate-direct",
+      "compareIds": [
+        "candidate-direct",
+        "candidate-transfer-a"
+      ],
+      "expected": {
+        "clientKeepsResponseOrder": true,
+        "missingPriceNotZero": true,
+        "comparingDoesNotSave": true,
+        "selectionUpdatesMapAndLegs": true
+      }
+    },
+    "F04": {
+      "name": "LONG_ROUTE",
+      "nodeIds": [
+        "node-01",
+        "node-02",
+        "node-03",
+        "node-04",
+        "node-05",
+        "node-06",
+        "node-07",
+        "node-08",
+        "node-09",
+        "node-10",
+        "node-11",
+        "node-12"
+      ],
+      "initialSelectedNodeId": "node-12",
+      "expected": {
+        "nodeCount": 12,
+        "intermediateStayDays": 1,
+        "allNodesReachable": true,
+        "fixedTransferLimit": null
+      }
+    },
+    "F05": {
+      "name": "INDEPENDENT_PARTIAL_STATES",
+      "variants": [
+        {
+          "id": "geometry-only",
+          "geometryRef": "schematic-main",
+          "timingState": "unmatched",
+          "priceState": "unknown",
+          "canSimulate": false
+        },
+        {
+          "id": "price-missing",
+          "geometryRef": "schematic-main",
+          "timingState": "matched",
+          "priceState": "partial",
+          "canSimulate": true
+        },
+        {
+          "id": "geometry-missing",
+          "geometryRef": null,
+          "timingState": "matched",
+          "priceState": "complete",
+          "canSimulate": true
+        },
+        {
+          "id": "stale",
+          "geometryRef": "schematic-main",
+          "timingState": "stale",
+          "priceState": "stale",
+          "canSimulate": false
+        }
+      ],
+      "expected": {
+        "missingGeometryConnectors": 0,
+        "availabilityStates": []
+      }
+    },
+    "F06": {
+      "name": "IDENTITY_EXPIRED",
+      "initialUserId": "fx.user.A",
+      "tripId": "fx.trip.1",
+      "unsavedTitle": "甲的未保存草稿",
+      "writeResponse": {
+        "status": 401,
+        "uiCode": "AUTH_REQUIRED"
+      },
+      "reloginVariants": [
+        {
+          "userId": "fx.user.A",
+          "mayResume": true
+        },
+        {
+          "userId": "fx.user.B",
+          "mayResume": false
+        }
+      ],
+      "foreignTripResponse": {
+        "status": 404,
+        "uiCode": "NOT_FOUND"
+      },
+      "expected": {
+        "draftRetainedForSameUser": true,
+        "passwordInStore": false,
+        "foreignDataDisplayed": false,
+        "unknownWriteAutoRetried": false
+      }
+    },
+    "F07": {
+      "name": "TRIPS_CRUD",
+      "items": [
+        {
+          "id": "fx.trip.1",
+          "ownerId": "fx.user.A",
+          "title": "北京 → 上海",
+          "citySummary": "北京 → 上海",
+          "departureDate": "2026-11-16",
+          "updatedAt": "2026-11-16T08:00:00+08:00",
+          "version": "v3"
+        },
+        {
+          "id": "fx.trip.2",
+          "ownerId": "fx.user.A",
+          "title": "西安 → 兰州",
+          "citySummary": "西安 → 兰州",
+          "departureDate": "2026-11-18",
+          "updatedAt": "2026-11-15T08:00:00+08:00",
+          "version": "v1"
+        }
+      ],
+      "nextCursor": null,
+      "rename": {
+        "validTitle": "慢慢去上海",
+        "invalidTitle": ""
+      },
+      "delete": {
+        "tripId": "fx.trip.1",
+        "currentlyOpen": true,
+        "associatedRecordId": "fx.record.1"
+      },
+      "expected": {
+        "order": [
+          "fx.trip.1",
+          "fx.trip.2"
+        ],
+        "deleteRequiresConfirmation": true,
+        "deletedCurrentBecomesUnsavedDraft": true,
+        "recordSurvives": true
+      }
+    },
+    "F08": {
+      "name": "SIMULATION_RECORD",
+      "items": [
+        {
+          "id": "fx.record.1",
+          "ownerId": "fx.user.A",
+          "createdAt": "2026-11-16T08:10:00+08:00",
+          "planId": "fx.trip.1",
+          "planVersion": "v3",
+          "snapshot": {
+            "title": "北京 → 上海",
+            "legScenarioRef": "F02",
+            "datasetVersion": "fixture-history-2025",
+            "knownTotal": "50.00",
+            "missingPriceLegs": 1
+          }
+        }
+      ],
+      "requestId": "fx.record.request.1",
+      "responses": [
+        {
+          "attempt": 1,
+          "status": 201,
+          "recordId": "fx.record.1"
+        },
+        {
+          "attempt": 2,
+          "status": 200,
+          "recordId": "fx.record.1"
+        }
+      ],
+      "expected": {
+        "createdRecordCount": 1,
+        "snapshotUnaffectedByPlanEdits": true,
+        "paymentOrTicketStates": [],
+        "ownerChecked": true
+      }
+    },
+    "F09": {
+      "name": "AI_STREAM_RETRY",
+      "userMessage": {
+        "id": "fx.message.u1",
+        "text": "想去新疆，途经郑州"
+      },
+      "firstAttempt": {
+        "requestId": "ai-1",
+        "chunks": [
+          "建议",
+          "乌鲁木齐"
+        ],
+        "result": "failed",
+        "patchApplied": false
+      },
+      "retry": {
+        "requestId": "ai-2",
+        "replacesFailedAnswer": true,
+        "chunks": [
+          "已加入郑州。"
+        ],
+        "result": "complete",
+        "patch": {
+          "baseRevision": 3,
+          "cityNames": [
+            "北京",
+            "郑州",
+            "乌鲁木齐"
+          ],
+          "suggestedCityNames": [
+            "乌鲁木齐"
+          ]
+        }
+      },
+      "changedDuringRetry": {
+        "currentRevision": 4,
+        "patchBaseRevision": 3,
+        "apply": false
+      },
+      "lateResponse": {
+        "requestId": "ai-1",
+        "discard": true
+      },
+      "literalText": "<b>仅作文本</b>",
+      "expected": {
+        "userMessageCount": 1,
+        "appliedPatchCount": 1,
+        "scrollUpPreserved": true,
+        "htmlExecuted": false
+      }
+    },
+    "F10": {
+      "name": "SAVE_CONCURRENCY",
+      "initial": {
+        "planId": "fx.trip.1",
+        "userId": "fx.user.A",
+        "revision": 3,
+        "savedRevision": 2,
+        "serverVersion": "v7"
+      },
+      "events": [
+        {
+          "type": "save-start",
+          "requestId": "save-1",
+          "revision": 3,
+          "baseVersion": "v7"
+        },
+        {
+          "type": "edit",
+          "revision": 4
+        },
+        {
+          "type": "second-save-click",
+          "expectedRequestsAdded": 0
+        },
+        {
+          "type": "save-success",
+          "requestId": "save-1",
+          "savedRevision": 3,
+          "serverVersion": "v8"
+        },
+        {
+          "type": "other-tab-save",
+          "serverVersion": "v9"
+        },
+        {
+          "type": "save-conflict",
+          "requestId": "save-2",
+          "baseVersion": "v8",
+          "status": 409,
+          "uiCode": "PLAN_VERSION_CONFLICT"
+        }
+      ],
+      "expected": {
+        "revision": 4,
+        "savedRevision": 3,
+        "dirty": true,
+        "conflictKeepsLocalDraft": true,
+        "silentOverwrite": false
+      },
+      "unknownOutcome": {
+        "requestId": "save-timeout",
+        "lookupBeforeRetry": true,
+        "autoRetry": false
+      }
+    },
+    "F11": {
+      "name": "MAP_DENSITY_DIRECTION_DEGRADED",
+      "pathRefs": [
+        "schematic-main",
+        "schematic-alt",
+        "schematic-reverse"
+      ],
+      "ordinaryLabelCount": 80,
+      "nationalVisibleOrdinaryLabelMax": 24,
+      "overlappingNodes": [
+        {
+          "nodeId": "node-01",
+          "point": [
+            0.5,
+            0.5
+          ],
+          "role": "start"
+        },
+        {
+          "nodeId": "node-12",
+          "point": [
+            0.5,
+            0.5
+          ],
+          "role": "end"
+        }
+      ],
+      "expected": {
+        "routeOffsetApplied": false,
+        "rolesRemainSelectable": true,
+        "reversedArrowsFollowPath": true,
+        "degradedPreservesTextPlan": true,
+        "realRailEvidence": false
+      }
+    },
+    "F12": {
+      "name": "LONG_NAME_AND_TITLE",
+      "stationName": "用于界面验收的超长铁路客运站完整名称（非真实站点，仅用于换行与消歧测试）",
+      "otherStationName": "用于界面验收的超长铁路客运站完整名称二号（非真实站点）",
+      "latinId": "FIXTURE_STATION_IDENTIFIER_WITHOUT_BREAKS_01234567890123456789",
+      "invalidRenameTitle": "12345678901234567890123456789012345678901",
+      "expected": {
+        "distinguishableWithoutHover": true,
+        "noGlobalHorizontalOverflow": true,
+        "invalidTitleCodePoints": 41
+      }
+    },
+    "F13": {
+      "name": "ERROR_MAPPING",
+      "variants": [
+        {
+          "uiCode": "INVALID_CREDENTIALS",
+          "http": 401,
+          "context": "login"
+        },
+        {
+          "uiCode": "AUTH_REQUIRED",
+          "http": 401,
+          "context": "save"
+        },
+        {
+          "uiCode": "FORBIDDEN",
+          "http": 403,
+          "context": "open-trip"
+        },
+        {
+          "uiCode": "NOT_FOUND",
+          "http": 404,
+          "context": "open-trip"
+        },
+        {
+          "uiCode": "PLAN_VERSION_CONFLICT",
+          "http": 409,
+          "context": "save"
+        },
+        {
+          "uiCode": "VALIDATION_FAILED",
+          "http": 422,
+          "context": "conditions",
+          "field": "startDate"
+        },
+        {
+          "uiCode": "UPSTREAM_QUOTA",
+          "http": 429,
+          "context": "amap"
+        },
+        {
+          "uiCode": "NETWORK_OFFLINE",
+          "http": null,
+          "context": "search"
+        },
+        {
+          "uiCode": "REQUEST_TIMEOUT",
+          "http": null,
+          "context": "search"
+        },
+        {
+          "uiCode": "RESULT_UNKNOWN",
+          "http": null,
+          "context": "save"
+        },
+        {
+          "uiCode": "HISTORICAL_DATA_UNAVAILABLE",
+          "http": 503,
+          "context": "planning"
+        },
+        {
+          "uiCode": "GEOMETRY_UNAVAILABLE",
+          "http": 503,
+          "context": "map"
+        },
+        {
+          "uiCode": "UNKNOWN_ERROR",
+          "http": 500,
+          "context": "any"
+        }
+      ],
+      "rawMessage": "内部调试信息：不应直接显示",
+      "expected": {
+        "rawMessageVisible": false,
+        "unmappedUsesFallback": true
+      }
+    },
+    "F14": {
+      "name": "LOCAL_AND_AMAP",
+      "localResults": [
+        {
+          "id": "fx.station.1",
+          "type": "station",
+          "cityId": "fx.city.1",
+          "label": "北京测试站",
+          "source": "local"
+        }
+      ],
+      "amapResult": {
+        "id": "fx.amap.poi1",
+        "type": "place",
+        "label": "测试地点",
+        "source": "amap",
+        "coordinateSystem": "fixture-not-real"
+      },
+      "amapVariants": [
+        "empty",
+        "timeout",
+        "quota"
+      ],
+      "duplicate": {
+        "amapId": "fx.amap.station1",
+        "localStationId": "fx.station.1"
+      },
+      "expected": {
+        "ordinaryPlaceAutoAddedAsStation": false,
+        "duplicateStationCount": 1,
+        "localResultsRemainAfterAmapFailure": true,
+        "noServiceKeyInBrowser": true
+      }
+    },
+    "F16": {
+      "name": "GTFS_DATE_REPLAY_BOUNDARIES",
+      "datasetVersion": "fixture-gtfs-boundary",
+      "synthetic": true,
+      "cases": [
+        {
+          "id": "zero-shift",
+          "D0": "2026-11-16",
+          "R0": "2026-11-16",
+          "offsetDays": 0,
+          "referenceServiceDate": "2026-11-16",
+          "rawTime": "26:06:00",
+          "expectedReference": "2026-11-17T02:06:00+08:00",
+          "expectedJourney": "2026-11-17T02:06:00+08:00"
+        },
+        {
+          "id": "leap-shift",
+          "D0": "2026-11-16",
+          "R0": "2024-02-28",
+          "offsetDays": 992,
+          "referenceServiceDate": "2024-02-28",
+          "rawTime": "26:06:00",
+          "expectedReference": "2024-02-29T02:06:00+08:00",
+          "expectedJourney": "2026-11-17T02:06:00+08:00"
+        },
+        {
+          "id": "third-natural-day",
+          "D0": "2026-11-16",
+          "R0": "2024-02-28",
+          "offsetDays": 992,
+          "referenceServiceDate": "2024-02-28",
+          "rawTime": "56:20:00",
+          "expectedReference": "2024-03-01T08:20:00+08:00",
+          "expectedJourney": "2026-11-18T08:20:00+08:00"
+        },
+        {
+          "id": "cross-year",
+          "D0": "2026-12-31",
+          "R0": "2026-11-16",
+          "offsetDays": 45,
+          "referenceServiceDate": "2026-11-16",
+          "rawTime": "26:06:00",
+          "expectedReference": "2026-11-17T02:06:00+08:00",
+          "expectedJourney": "2027-01-01T02:06:00+08:00"
+        }
+      ],
+      "missingVariants": [
+        "no-service-calendar-entry",
+        "out-of-range",
+        "missing-shape",
+        "shape-not-matched-to-segment"
+      ],
+      "expected": {
+        "anchorsSurviveRestore": true,
+        "perDayMinusOneYear": false,
+        "missingShapeConnectors": 0,
+        "realRailEvidence": false
+      }
+    },
+    "F15": {
+      "name": "CONDITION_FIELDS_AND_LOCALIZATION",
+      "planningContext": {
+        "defaultDate": null,
+        "range": {
+          "minDate": "2026-11-01",
+          "maxDate": "2026-11-30"
+        },
+        "datasetVersion": "fixture-history-2025",
+        "timeZone": "Asia/Shanghai",
+        "conditionFields": []
+      },
+      "configuredVariant": {
+        "conditionFields": [
+          {
+            "key": "seat",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "fixture-seat",
+                "label": "测试席别"
+              }
+            ],
+            "defaultValue": null
+          }
+        ]
+      },
+      "invalidDates": [
+        "2026-02-30",
+        "2026-12-01"
+      ],
+      "invalidStayValues": [
+        "",
+        0,
+        -1,
+        1.5
+      ],
+      "offsetExample": {
+        "instant": "2026-11-16T00:30:00Z",
+        "expectedDisplay": "2026-11-16 08:30",
+        "browserTimeZones": [
+          "America/Los_Angeles",
+          "UTC",
+          "Asia/Shanghai"
+        ]
+      },
+      "expected": {
+        "unconfiguredSeatOrPeopleVisible": false,
+        "implicitPeopleDefault": null,
+        "nativeDateValue": "2026-11-16",
+        "configuredRequiredSeatInitiallyEmpty": true
+      }
+    }
+  }
+}

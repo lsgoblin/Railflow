@@ -1,0 +1,24 @@
+flowchart TD
+    home(["进入首页"])
+    mode{"选择查询方式"}
+    inputText["输入一句话"]
+    parsing["显示解析中"]
+    valid{"5 秒内解析并校验通过？"}
+    prefill["预填三个框，高亮 1.5 秒"]
+    review["用户检查并修改"]
+    fallback["提示失败，保留原文并聚焦表单"]
+    manual["手动选择站点与日期"]
+    submit["用户点击查车次"]
+    results(["展示车次列表"])
+    home --> mode
+    mode -->|"一句话"| inputText
+    inputText --> parsing
+    parsing --> valid
+    valid -->|"是"| prefill
+    prefill --> review
+    review --> submit
+    valid -->|"否"| fallback
+    fallback --> manual
+    mode -->|"手动"| manual
+    manual --> submit
+    submit --> results

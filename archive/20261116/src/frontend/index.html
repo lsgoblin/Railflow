@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fbfbf8" />
+    <meta name="color-scheme" content="light" />
+    <meta name="description" content="RailFlow 铁路车票预订与订单管理" />
+    <title>RailFlow · 铁路车票</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%2312201d'/%3E%3Cpath d='M9 7v18M23 7v18M9 12h14M9 20h14' stroke='%23fbfbf8' stroke-width='2.4'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23c9482f'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#app" data-action="skip-to-main">跳到主要内容</a>
+    <svg class="svg-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7"></circle>
+        <path d="m20 20-3.6-3.6"></path>
+      </symbol>
+      <symbol id="i-swap" viewBox="0 0 24 24">
+        <path d="M7 4 3 8l4 4"></path>
+        <path d="M3 8h15"></path>
+        <path d="m17 20 4-4-4-4"></path>
+        <path d="M21 16H6"></path>
+      </symbol>
+      <symbol id="i-map" viewBox="0 0 24 24">
+        <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"></path>
+        <path d="M9 4v14M15 6v14"></path>
+      </symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24">
+        <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z"></path>
+        <circle cx="12" cy="10" r="2.4"></circle>
+      </symbol>
+      <symbol id="i-arrow-right" viewBox="0 0 24 24">
+        <path d="M4 12h16"></path>
+        <path d="m14 6 6 6-6 6"></path>
+      </symbol>
+      <symbol id="i-arrow-left" viewBox="0 0 24 24">
+        <path d="M20 12H4"></path>
+        <path d="m10 18-6-6 6-6"></path>
+      </symbol>
+      <symbol id="i-train" viewBox="0 0 24 24">
+        <rect x="5" y="3" width="14" height="14" rx="3"></rect>
+        <path d="M8 7h8M8 11h8"></path>
+        <path d="m8 21 2-4M16 21l-2-4"></path>
+        <circle cx="8.5" cy="14" r="1"></circle>
+        <circle cx="15.5" cy="14" r="1"></circle>
+      </symbol>
+      <symbol id="i-ticket" viewBox="0 0 24 24">
+        <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a3 3 0 0 0 0 6v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a3 3 0 0 0 0-6Z"></path>
+        <path d="M13 5v14" stroke-dasharray="2 2"></path>
+      </symbol>
+      <symbol id="i-user" viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4 21a8 8 0 0 1 16 0"></path>
+      </symbol>
+      <symbol id="i-users" viewBox="0 0 24 24">
+        <circle cx="9" cy="8" r="3.5"></circle>
+        <path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path>
+        <path d="M16 5.2a3.5 3.5 0 0 1 0 6.6M17 14a6.5 6.5 0 0 1 4.5 6"></path>
+      </symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24">
+        <path d="M12 3 5 6v5c0 4.6 2.9 8 7 10 4.1-2 7-5.4 7-10V6Z"></path>
+        <path d="m9 12 2 2 4-4"></path>
+      </symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24">
+        <path d="m6 9 6 6 6-6"></path>
+      </symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24">
+        <path d="m9 6 6 6-6 6"></path>
+      </symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 7v5l3 2"></path>
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24">
+        <path d="m5 12 4 4L19 6"></path>
+      </symbol>
+      <symbol id="i-check-circle" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="m8 12 2.5 2.5L16 9"></path>
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 24 24">
+        <path d="M6 6l12 12M18 6 6 18"></path>
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14"></path>
+      </symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24">
+        <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17Z"></path>
+        <path d="m14 7 3 3"></path>
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24">
+        <path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6"></path>
+      </symbol>
+      <symbol id="i-logout" viewBox="0 0 24 24">
+        <path d="M10 4H5v16h5"></path>
+        <path d="M14 8l4 4-4 4M9 12h9"></path>
+      </symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24">
+        <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+        <path d="M8 3v4M16 3v4M3 10h18"></path>
+      </symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24">
+        <path d="M12 3 2.8 20h18.4Z"></path>
+        <path d="M12 9v5M12 17.5v.1"></path>
+      </symbol>
+      <symbol id="i-info" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M12 11v5M12 8v.1"></path>
+      </symbol>
+      <symbol id="i-refund" viewBox="0 0 24 24">
+        <path d="M4 10a8 8 0 1 1 2.3 8"></path>
+        <path d="M4 4v6h6"></path>
+        <path d="M12 8v5l3 2"></path>
+      </symbol>
+      <symbol id="i-card" viewBox="0 0 24 24">
+        <rect x="2.5" y="5" width="19" height="14" rx="2"></rect>
+        <path d="M2.5 10h19M6 15h4"></path>
+      </symbol>
+      <symbol id="i-wallet" viewBox="0 0 24 24">
+        <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H19v16H6.5A2.5 2.5 0 0 1 4 17.5Z"></path>
+        <path d="M4 7h15M15 12h5v4h-5a2 2 0 0 1 0-4Z"></path>
+      </symbol>
+      <symbol id="i-chat" viewBox="0 0 24 24">
+        <path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-4.8A8.5 8.5 0 1 1 21 11.5Z"></path>
+        <path d="M8 10h8M8 14h5"></path>
+      </symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24">
+        <path d="M4 7h16M4 12h16M4 17h16"></path>
+      </symbol>
+      <symbol id="i-home" viewBox="0 0 24 24">
+        <path d="m3 11 9-8 9 8"></path>
+        <path d="M5 10v10h14V10M9 20v-6h6v6"></path>
+      </symbol>
+      <symbol id="i-list" viewBox="0 0 24 24">
+        <path d="M8 6h13M8 12h13M8 18h13M3 6h.1M3 12h.1M3 18h.1"></path>
+      </symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24">
+        <rect x="4" y="10" width="16" height="11" rx="2"></rect>
+        <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"></path>
+      </symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24">
+        <path d="M20 7v5h-5"></path>
+        <path d="M4 17v-5h5"></path>
+        <path d="M6.1 8a7 7 0 0 1 11.5-1L20 12M4 12l2.4 5a7 7 0 0 0 11.5-1"></path>
+      </symbol>
+      <symbol id="i-arrow-up-right" viewBox="0 0 24 24">
+        <path d="M7 17 17 7M8 7h9v9"></path>
+      </symbol>
+      <symbol id="i-train-front" viewBox="0 0 24 24">
+        <path d="M6 3h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"></path>
+        <path d="M8 7h8M9 21l2-4M15 21l-2-4"></path>
+        <circle cx="9" cy="13" r="1"></circle>
+        <circle cx="15" cy="13" r="1"></circle>
+      </symbol>
+      <symbol id="i-arrow-down" viewBox="0 0 24 24">
+        <path d="M12 4v16M6 14l6 6 6-6"></path>
+      </symbol>
+    </svg>
+
+    <div class="app-shell">
+      <header id="site-header" class="site-header"></header>
+      <main id="app" class="app-main" tabindex="-1" aria-label="主要内容"></main>
+      <nav id="mobile-nav" class="mobile-nav" aria-label="移动端导航"></nav>
+    </div>
+
+    <div id="drawer-root"></div>
+    <div id="modal-root"></div>
+    <div id="toast-root" class="toast-root" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <div class="noscript">请启用 JavaScript 以使用 RailFlow。</div>
+    </noscript>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

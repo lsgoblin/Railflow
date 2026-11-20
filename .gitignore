@@ -1,0 +1,38 @@
+~$*
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+node_modules/
+
+# Local runtime and debug output
+log/*.log
+log/*.log.*
+
+# Local frontend secrets (AMap JS API key / security code)
+src/frontend/config.local.js
+
+# Intermediate and temporary artifacts
+output/
+
+# Java build output
+target/
+*.class
+
+# PPT build workspace (project sources, renders, review screenshots)
+/PPT/
+
+# Local working notes
+/Notes/
+
+# Process records kept local only (task ledger, role handoffs)
+/tasks/
+/handoff/
+
+# Local agent tooling (installed skills and lock file)
+/.agents/
+/skills-lock.json
+
+# Local tool hooks (Java modernization assistant)
+/.github/modernize/

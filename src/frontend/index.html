@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>RailFlow · 历史回放</title>
+  <meta name="description" content="RailFlow 同车次直达查询（历史数据回放）">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23145FE0'/%3E%3Cpath d='M5 17c4-1 5-4 6-7 1-3 3-4 8-3' stroke='%23fff' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./tokens.css">
+  <link rel="stylesheet" href="./app.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace-panel">跳到查询面板</a>
+
+  <div class="app" id="app">
+    <header class="topbar" id="topbar">
+      <div class="brand" aria-label="RailFlow">
+        <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+          <rect width="28" height="28" rx="8" fill="currentColor"></rect>
+          <path d="M6 20c4.6-1 5.8-4.6 7-8 1.2-3.4 3.6-4.6 9-3.4" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"></path>
+        </svg>
+        <span class="brand-name">RailFlow</span>
+      </div>
+      <p class="dataset-summary" id="dataset-summary" aria-live="polite">正在读取数据版本…</p>
+      <span class="tag tag-warning" id="fixture-badge" hidden>开发夹具</span>
+    </header>
+
+    <aside class="panel" id="workspace-panel" aria-label="同车次直达查询">
+      <div class="panel-head" id="panel-head">
+        <div class="panel-heading">
+          <span class="panel-heading-title">同车次直达</span>
+          <span class="tag tag-neutral">历史回放</span>
+        </div>
+        <p class="panel-head-sub">选择两站与包内原始参考服务日，查看同车次直达区间与轨迹。</p>
+      </div>
+
+      <div class="panel-body" id="panel-body">
+        <form class="mvp-form" id="mvp-form" novalidate>
+          <div class="field">
+            <label class="field-label" for="station-input-from">出发站</label>
+            <div id="station-from"></div>
+            <p class="field-error" id="error-from" hidden></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="station-input-to">到达站</label>
+            <div id="station-to"></div>
+            <p class="field-error" id="error-to" hidden></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="service-date">参考服务日</label>
+            <input class="date-input" id="service-date" type="date" autocomplete="off">
+            <p class="field-hint">列车原始服务日；途中到发可能已是下一自然日，不做 D0/R0 偏移。</p>
+            <p class="field-error" id="error-date" hidden></p>
+          </div>
+          <button class="button button-primary query-button" id="query-button" type="submit">查询直达车次</button>
+          <p class="query-status" id="query-status" role="status" aria-live="polite"></p>
+          <div id="warnings"></div>
+        </form>
+        <div id="mvp-results"></div>
+      </div>
+    </aside>
+
+    <section class="map-region" id="map-region" aria-label="区间轨迹地图">
+      <div class="map-canvas" id="map-canvas"></div>
+      <p class="map-notice" id="map-status" role="status" hidden></p>
+      <div class="map-tools" role="group" aria-label="地图工具">
+        <button type="button" class="icon-button map-tool" data-map-action="fit" aria-label="查看全程" title="查看全程" data-testid="map-fit">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button type="button" class="icon-button map-tool" data-map-action="zoom-in" aria-label="放大" title="放大" data-testid="map-zoom-in">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <button type="button" class="icon-button map-tool" data-map-action="zoom-out" aria-label="缩小" title="缩小" data-testid="map-zoom-out">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="map-source" id="map-source" aria-live="polite"></div>
+    </section>
+
+    <div id="toast-root" class="toast-root" role="status" aria-live="polite" aria-atomic="false"></div>
+    <div id="dev-root" class="dev-root" hidden></div>
+  </div>
+
+  <noscript><p class="noscript">需要启用 JavaScript 才能使用 RailFlow。</p></noscript>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

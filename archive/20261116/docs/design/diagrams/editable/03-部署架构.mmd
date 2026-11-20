@@ -1,0 +1,27 @@
+flowchart LR
+    subgraph client ["用户设备"]
+        browser["浏览器
+原生 ES Modules"]
+    end
+    subgraph gateway ["演示主机：Web 入口"]
+        nginx["Nginx 进程
+HTTP 80 / 静态 src
+/api 反向代理"]
+    end
+    subgraph service ["演示主机：应用进程"]
+        jvm["JDK 17 JVM
+Spring Boot JAR
+Session / 内置调度"]
+    end
+    subgraph datastore ["演示主机：数据库进程"]
+        mysql["MySQL 8
+业务表 / 种子数据"]
+    end
+    subgraph external ["外部服务"]
+        llmApi["LLM API
+OpenAI 兼容接口"]
+    end
+    browser -->|"HTTP :80"| nginx
+    nginx -->|"/api 同源转发"| jvm
+    jvm -->|"JDBC / MyBatis"| mysql
+    jvm -.->|"LLM API：HTTPS"| llmApi

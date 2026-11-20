@@ -1,0 +1,17 @@
+stateDiagram-v2
+    direction LR
+    state "待支付 PENDING" as pending
+    state "已确认 CONFIRMED" as confirmed
+    state "已取消 CANCELLED" as cancelled
+    state "已超时 EXPIRED" as expired
+    state "已退款 REFUNDED" as refunded
+    [*] --> pending: 下单成功并锁座
+    pending --> confirmed: 截止前支付成功
+    pending --> pending: 支付失败，期限不延长
+    pending --> cancelled: 用户取消，释放锁座
+    pending --> expired: 截止时间到，幂等释放
+    confirmed --> refunded: 距发车大于 30 分钟且退款成功
+    confirmed --> confirmed: 退款失败，席位不释放
+    cancelled --> [*]
+    expired --> [*]
+    refunded --> [*]

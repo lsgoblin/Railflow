@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/railflow?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:railflow}
+    password: ${DB_PASSWORD:railflow}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      initialization-fail-timeout: -1
+  sql:
+    init:
+      mode: never

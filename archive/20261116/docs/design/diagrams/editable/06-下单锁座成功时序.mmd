@@ -1,0 +1,21 @@
+sequenceDiagram
+    title 下单锁座：成功路径
+    participant user
+    participant webApp
+    participant orderController
+    participant orderService
+    participant mysql
+    user->>webApp: 确认日期车次和一名乘车人
+    webApp->>orderController: POST /api/orders
+    orderController->>orderService: 会话用户、runId、passengerId
+    orderService->>mysql: 开始事务，读取车次和乘车人
+    mysql-->>orderService: 可售车次、发车时间和本人档案
+    orderService->>mysql: 检查同组合活跃订单
+    mysql-->>orderService: 无重复订单
+    orderService->>mysql: 条件 UPDATE 锁座，要求余票大于零
+    mysql-->>orderService: 影响一行
+    orderService->>mysql: INSERT PENDING、截止时间和订单快照
+    orderService->>mysql: INSERT 锁座操作记录，提交事务
+    orderService-->>orderController: 新订单详情
+    orderController-->>webApp: 201 Created
+    webApp-->>user: 待支付订单与倒计时

@@ -1,0 +1,1361 @@
+{
+  "datasetVersion": "gtfs-20261116-085531",
+  "packageSha256": "4D60E72512C4595B516A5E13BE41235C87620A1C39D38FD2310E1094A5D9666D",
+  "sourceFile": "stop_times.txt",
+  "sourceFileSha256": "B532C301E6C0CC7762BC5ECFAC33BD0D0458E3140FCF58D92464218E78CCEE5B",
+  "code": "KNOWN_SOURCE_ARRIVAL_AFTER_DEPARTURE",
+  "count": 193,
+  "records": [
+    {
+      "tripId": "02000K706610",
+      "stopSequence": 9,
+      "stopId": "JMB",
+      "arrivalTime": "47:53:00",
+      "departureTime": "24:15:00"
+    },
+    {
+      "tripId": "03000K101404",
+      "stopSequence": 9,
+      "stopId": "CCT",
+      "arrivalTime": "47:57:00",
+      "departureTime": "24:06:00"
+    },
+    {
+      "tripId": "03000K101404",
+      "stopSequence": 27,
+      "stopId": "SPF",
+      "arrivalTime": "71:57:00",
+      "departureTime": "48:26:00"
+    },
+    {
+      "tripId": "04000K12300H",
+      "stopSequence": 12,
+      "stopId": "SYT",
+      "arrivalTime": "47:52:00",
+      "departureTime": "24:06:00"
+    },
+    {
+      "tripId": "05000K12600E",
+      "stopSequence": 9,
+      "stopId": "QHX",
+      "arrivalTime": "47:48:00",
+      "departureTime": "24:18:00"
+    },
+    {
+      "tripId": "0h0000Z1780I",
+      "stopSequence": 21,
+      "stopId": "NJH",
+      "arrivalTime": "71:57:00",
+      "departureTime": "48:08:00"
+    },
+    {
+      "tripId": "11000K10240A",
+      "stopSequence": 13,
+      "stopId": "BJP",
+      "arrivalTime": "37:06:00",
+      "departureTime": "37:00:00"
+    },
+    {
+      "tripId": "11000K11900R",
+      "stopSequence": 6,
+      "stopId": "TLD",
+      "arrivalTime": "47:51:00",
+      "departureTime": "24:09:00"
+    },
+    {
+      "tripId": "11000K49371F",
+      "stopSequence": 4,
+      "stopId": "JIY",
+      "arrivalTime": "71:50:00",
+      "departureTime": "48:20:00"
+    },
+    {
+      "tripId": "120000K34612",
+      "stopSequence": 30,
+      "stopId": "ECH",
+      "arrivalTime": "71:57:00",
+      "departureTime": "48:01:00"
+    },
+    {
+      "tripId": "12000K126206",
+      "stopSequence": 10,
+      "stopId": "QHX",
+      "arrivalTime": "47:38:00",
+      "departureTime": "24:08:00"
+    },
+    {
+      "tripId": "130000K12903",
+      "stopSequence": 9,
+      "stopId": "SYT",
+      "arrivalTime": "47:56:00",
+      "departureTime": "24:08:00"
+    },
+    {
+      "tripId": "190000K9720K",
+      "stopSequence": 22,
+      "stopId": "QHK",
+      "arrivalTime": "40:27:00",
+      "departureTime": "39:56:00"
+    },
+    {
+      "tripId": "24000000D131",
+      "stopSequence": 3,
+      "stopId": "ZZF",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:05:00"
+    },
+    {
+      "tripId": "2400000K950O",
+      "stopSequence": 14,
+      "stopId": "SYT",
+      "arrivalTime": "47:49:00",
+      "departureTime": "24:21:00"
+    },
+    {
+      "tripId": "240000K11710",
+      "stopSequence": 12,
+      "stopId": "ROF",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:03:00"
+    },
+    {
+      "tripId": "240000K4011D",
+      "stopSequence": 4,
+      "stopId": "DXP",
+      "arrivalTime": "47:49:00",
+      "departureTime": "24:03:00"
+    },
+    {
+      "tripId": "240000K47322",
+      "stopSequence": 10,
+      "stopId": "XXF",
+      "arrivalTime": "47:44:00",
+      "departureTime": "24:01:00"
+    },
+    {
+      "tripId": "240000S10500",
+      "stopSequence": 7,
+      "stopId": "QEP",
+      "arrivalTime": "08:34:00",
+      "departureTime": "08:30:00"
+    },
+    {
+      "tripId": "240000T17515",
+      "stopSequence": 11,
+      "stopId": "DYJ",
+      "arrivalTime": "47:58:00",
+      "departureTime": "24:01:00"
+    },
+    {
+      "tripId": "240000Z5010I",
+      "stopSequence": 10,
+      "stopId": "ZWQ",
+      "arrivalTime": "71:26:00",
+      "departureTime": "48:02:00"
+    },
+    {
+      "tripId": "24000K145310",
+      "stopSequence": 10,
+      "stopId": "HVN",
+      "arrivalTime": "47:49:00",
+      "departureTime": "24:08:00"
+    },
+    {
+      "tripId": "24000K52310Z",
+      "stopSequence": 5,
+      "stopId": "XTP",
+      "arrivalTime": "47:31:00",
+      "departureTime": "24:20:00"
+    },
+    {
+      "tripId": "25000D667600",
+      "stopSequence": 2,
+      "stopId": "BJP",
+      "arrivalTime": "06:46:00",
+      "departureTime": "06:43:00"
+    },
+    {
+      "tripId": "25000G881001",
+      "stopSequence": 4,
+      "stopId": "BJP",
+      "arrivalTime": "19:58:00",
+      "departureTime": "19:53:00"
+    },
+    {
+      "tripId": "25000G883801",
+      "stopSequence": 6,
+      "stopId": "BJP",
+      "arrivalTime": "18:29:00",
+      "departureTime": "18:28:00"
+    },
+    {
+      "tripId": "25000G89020H",
+      "stopSequence": 3,
+      "stopId": "BJP",
+      "arrivalTime": "10:30:00",
+      "departureTime": "10:20:00"
+    },
+    {
+      "tripId": "25000K260206",
+      "stopSequence": 6,
+      "stopId": "FTP",
+      "arrivalTime": "47:41:00",
+      "departureTime": "24:07:00"
+    },
+    {
+      "tripId": "25000T560401",
+      "stopSequence": 4,
+      "stopId": "BJP",
+      "arrivalTime": "17:36:00",
+      "departureTime": "17:35:00"
+    },
+    {
+      "tripId": "26000K773102",
+      "stopSequence": 10,
+      "stopId": "FTP",
+      "arrivalTime": "47:51:00",
+      "departureTime": "24:22:00"
+    },
+    {
+      "tripId": "330000K31101",
+      "stopSequence": 4,
+      "stopId": "FMC",
+      "arrivalTime": "47:55:00",
+      "departureTime": "24:01:00"
+    },
+    {
+      "tripId": "33000K791610",
+      "stopSequence": 4,
+      "stopId": "JAC",
+      "arrivalTime": "47:49:00",
+      "departureTime": "24:06:00"
+    },
+    {
+      "tripId": "380000K457D0",
+      "stopSequence": 11,
+      "stopId": "HYQ",
+      "arrivalTime": "47:55:00",
+      "departureTime": "24:21:00"
+    },
+    {
+      "tripId": "380000T1970S",
+      "stopSequence": 2,
+      "stopId": "YSF",
+      "arrivalTime": "47:49:00",
+      "departureTime": "24:05:00"
+    },
+    {
+      "tripId": "38000K11490A",
+      "stopSequence": 5,
+      "stopId": "XCH",
+      "arrivalTime": "47:50:00",
+      "departureTime": "24:01:00"
+    },
+    {
+      "tripId": "390000K4620N",
+      "stopSequence": 4,
+      "stopId": "ERN",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:04:00"
+    },
+    {
+      "tripId": "39000D520808",
+      "stopSequence": 2,
+      "stopId": "HKN",
+      "arrivalTime": "20:46:00",
+      "departureTime": "19:43:00"
+    },
+    {
+      "tripId": "39000G683909",
+      "stopSequence": 3,
+      "stopId": "EKN",
+      "arrivalTime": "22:12:00",
+      "departureTime": "22:10:00"
+    },
+    {
+      "tripId": "39000K806640",
+      "stopSequence": 6,
+      "stopId": "JMN",
+      "arrivalTime": "21:01:00",
+      "departureTime": "19:48:00"
+    },
+    {
+      "tripId": "400000K53800",
+      "stopSequence": 7,
+      "stopId": "XFN",
+      "arrivalTime": "47:56:00",
+      "departureTime": "24:21:00"
+    },
+    {
+      "tripId": "400000K5900W",
+      "stopSequence": 3,
+      "stopId": "JOF",
+      "arrivalTime": "47:58:00",
+      "departureTime": "24:02:00"
+    },
+    {
+      "tripId": "4100000K602B",
+      "stopSequence": 11,
+      "stopId": "LKF",
+      "arrivalTime": "47:54:00",
+      "departureTime": "24:04:00"
+    },
+    {
+      "tripId": "410000K2141B",
+      "stopSequence": 13,
+      "stopId": "VVP",
+      "arrivalTime": "47:57:00",
+      "departureTime": "24:07:00"
+    },
+    {
+      "tripId": "410000K46821",
+      "stopSequence": 10,
+      "stopId": "XUN",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:14:00"
+    },
+    {
+      "tripId": "41000K42880C",
+      "stopSequence": 6,
+      "stopId": "ZZF",
+      "arrivalTime": "47:55:00",
+      "departureTime": "24:23:00"
+    },
+    {
+      "tripId": "42000D581209",
+      "stopSequence": 5,
+      "stopId": "HKN",
+      "arrivalTime": "13:51:00",
+      "departureTime": "13:46:00"
+    },
+    {
+      "tripId": "42000G678206",
+      "stopSequence": 9,
+      "stopId": "HKN",
+      "arrivalTime": "13:05:00",
+      "departureTime": "13:02:00"
+    },
+    {
+      "tripId": "42000K806890",
+      "stopSequence": 6,
+      "stopId": "WCN",
+      "arrivalTime": "16:02:00",
+      "departureTime": "11:21:00"
+    },
+    {
+      "tripId": "47000K827850",
+      "stopSequence": 2,
+      "stopId": "UCK",
+      "arrivalTime": "47:48:00",
+      "departureTime": "24:06:00"
+    },
+    {
+      "tripId": "480000K16109",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "47:51:00",
+      "departureTime": "24:14:00"
+    },
+    {
+      "tripId": "480000K6140O",
+      "stopSequence": 10,
+      "stopId": "FYH",
+      "arrivalTime": "47:50:00",
+      "departureTime": "24:04:00"
+    },
+    {
+      "tripId": "48000D542901",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "16:20:00",
+      "departureTime": "16:17:00"
+    },
+    {
+      "tripId": "48000D544900",
+      "stopSequence": 10,
+      "stopId": "NJH",
+      "arrivalTime": "22:30:00",
+      "departureTime": "22:27:00"
+    },
+    {
+      "tripId": "48000G833500",
+      "stopSequence": 8,
+      "stopId": "NJH",
+      "arrivalTime": "15:57:00",
+      "departureTime": "15:55:00"
+    },
+    {
+      "tripId": "4900000D2600",
+      "stopSequence": 4,
+      "stopId": "JAK",
+      "arrivalTime": "47:50:00",
+      "departureTime": "24:09:00"
+    },
+    {
+      "tripId": "490000Z1700C",
+      "stopSequence": 14,
+      "stopId": "FYH",
+      "arrivalTime": "47:56:00",
+      "departureTime": "24:21:00"
+    },
+    {
+      "tripId": "49000K11620X",
+      "stopSequence": 18,
+      "stopId": "ZZF",
+      "arrivalTime": "47:45:00",
+      "departureTime": "24:17:00"
+    },
+    {
+      "tripId": "49000K17860E",
+      "stopSequence": 12,
+      "stopId": "BJP",
+      "arrivalTime": "16:00:00",
+      "departureTime": "15:39:00"
+    },
+    {
+      "tripId": "49000K827630",
+      "stopSequence": 6,
+      "stopId": "JAK",
+      "arrivalTime": "47:44:00",
+      "departureTime": "24:02:00"
+    },
+    {
+      "tripId": "4r000G68080A",
+      "stopSequence": 3,
+      "stopId": "HKN",
+      "arrivalTime": "09:56:00",
+      "departureTime": "09:55:00"
+    },
+    {
+      "tripId": "4r000G681802",
+      "stopSequence": 3,
+      "stopId": "HKN",
+      "arrivalTime": "12:57:00",
+      "departureTime": "12:55:00"
+    },
+    {
+      "tripId": "4r000G682802",
+      "stopSequence": 3,
+      "stopId": "HKN",
+      "arrivalTime": "15:56:00",
+      "departureTime": "15:55:00"
+    },
+    {
+      "tripId": "4r000G683806",
+      "stopSequence": 3,
+      "stopId": "HKN",
+      "arrivalTime": "18:26:00",
+      "departureTime": "18:25:00"
+    },
+    {
+      "tripId": "4r000G68480B",
+      "stopSequence": 4,
+      "stopId": "HKN",
+      "arrivalTime": "21:03:00",
+      "departureTime": "21:02:00"
+    },
+    {
+      "tripId": "530000T22108",
+      "stopSequence": 6,
+      "stopId": "JJG",
+      "arrivalTime": "47:55:00",
+      "departureTime": "24:02:00"
+    },
+    {
+      "tripId": "5500000D1010",
+      "stopSequence": 3,
+      "stopId": "NJH",
+      "arrivalTime": "47:56:00",
+      "departureTime": "24:02:00"
+    },
+    {
+      "tripId": "550000K46442",
+      "stopSequence": 8,
+      "stopId": "GYH",
+      "arrivalTime": "47:57:00",
+      "departureTime": "24:01:00"
+    },
+    {
+      "tripId": "550000K782B1",
+      "stopSequence": 9,
+      "stopId": "DCH",
+      "arrivalTime": "47:57:00",
+      "departureTime": "24:09:00"
+    },
+    {
+      "tripId": "550000K80708",
+      "stopSequence": 9,
+      "stopId": "QEH",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:02:00"
+    },
+    {
+      "tripId": "550000K85006",
+      "stopSequence": 2,
+      "stopId": "KSH",
+      "arrivalTime": "47:56:00",
+      "departureTime": "24:01:00"
+    },
+    {
+      "tripId": "55000G7002A1",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "08:45:00",
+      "departureTime": "08:42:00"
+    },
+    {
+      "tripId": "55000G7004F3",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "09:43:00",
+      "departureTime": "09:40:00"
+    },
+    {
+      "tripId": "55000G7006A3",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "10:44:00",
+      "departureTime": "10:41:00"
+    },
+    {
+      "tripId": "55000G7010A2",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "12:42:00",
+      "departureTime": "12:39:00"
+    },
+    {
+      "tripId": "55000G7012D3",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "13:48:00",
+      "departureTime": "13:45:00"
+    },
+    {
+      "tripId": "55000G7014E4",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "14:42:00",
+      "departureTime": "14:39:00"
+    },
+    {
+      "tripId": "55000G701668",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "15:44:00",
+      "departureTime": "15:41:00"
+    },
+    {
+      "tripId": "55000G7020D3",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "17:42:00",
+      "departureTime": "17:39:00"
+    },
+    {
+      "tripId": "55000G7022C3",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "18:42:00",
+      "departureTime": "18:39:00"
+    },
+    {
+      "tripId": "55000G702474",
+      "stopSequence": 6,
+      "stopId": "NJH",
+      "arrivalTime": "19:49:00",
+      "departureTime": "19:46:00"
+    },
+    {
+      "tripId": "55000G702690",
+      "stopSequence": 6,
+      "stopId": "NJH",
+      "arrivalTime": "20:55:00",
+      "departureTime": "20:52:00"
+    },
+    {
+      "tripId": "55000G702801",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "21:42:00",
+      "departureTime": "21:39:00"
+    },
+    {
+      "tripId": "55000G703009",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "22:37:00",
+      "departureTime": "22:34:00"
+    },
+    {
+      "tripId": "55000G703280",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "07:42:00",
+      "departureTime": "07:40:00"
+    },
+    {
+      "tripId": "55000G7036G0",
+      "stopSequence": 8,
+      "stopId": "NJH",
+      "arrivalTime": "10:14:00",
+      "departureTime": "10:13:00"
+    },
+    {
+      "tripId": "55000G704002",
+      "stopSequence": 6,
+      "stopId": "NJH",
+      "arrivalTime": "21:59:00",
+      "departureTime": "21:56:00"
+    },
+    {
+      "tripId": "55000G70420I",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "12:12:00",
+      "departureTime": "12:09:00"
+    },
+    {
+      "tripId": "55000G7052E0",
+      "stopSequence": 6,
+      "stopId": "NJH",
+      "arrivalTime": "17:37:00",
+      "departureTime": "17:34:00"
+    },
+    {
+      "tripId": "55000G705603",
+      "stopSequence": 9,
+      "stopId": "NJH",
+      "arrivalTime": "19:40:00",
+      "departureTime": "19:37:00"
+    },
+    {
+      "tripId": "55000G7062J0",
+      "stopSequence": 8,
+      "stopId": "NJH",
+      "arrivalTime": "21:18:00",
+      "departureTime": "21:15:00"
+    },
+    {
+      "tripId": "55000G7064F1",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "22:22:00",
+      "departureTime": "22:19:00"
+    },
+    {
+      "tripId": "55000G706802",
+      "stopSequence": 4,
+      "stopId": "NJH",
+      "arrivalTime": "23:26:00",
+      "departureTime": "23:23:00"
+    },
+    {
+      "tripId": "55000K15560A",
+      "stopSequence": 15,
+      "stopId": "NCG",
+      "arrivalTime": "47:43:00",
+      "departureTime": "24:10:00"
+    },
+    {
+      "tripId": "5600000D4700",
+      "stopSequence": 3,
+      "stopId": "JBH",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:06:00"
+    },
+    {
+      "tripId": "560000D12602",
+      "stopSequence": 8,
+      "stopId": "XCH",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:06:00"
+    },
+    {
+      "tripId": "560000K529C0",
+      "stopSequence": 14,
+      "stopId": "WCN",
+      "arrivalTime": "47:49:00",
+      "departureTime": "24:15:00"
+    },
+    {
+      "tripId": "560000K89209",
+      "stopSequence": 4,
+      "stopId": "WHH",
+      "arrivalTime": "47:57:00",
+      "departureTime": "24:01:00"
+    },
+    {
+      "tripId": "56000G712401",
+      "stopSequence": 13,
+      "stopId": "NJH",
+      "arrivalTime": "21:37:00",
+      "departureTime": "21:34:00"
+    },
+    {
+      "tripId": "56000K115241",
+      "stopSequence": 13,
+      "stopId": "XUN",
+      "arrivalTime": "47:53:00",
+      "departureTime": "24:08:00"
+    },
+    {
+      "tripId": "570000K2880R",
+      "stopSequence": 4,
+      "stopId": "SRG",
+      "arrivalTime": "47:56:00",
+      "departureTime": "24:07:00"
+    },
+    {
+      "tripId": "57000K145410",
+      "stopSequence": 14,
+      "stopId": "HVN",
+      "arrivalTime": "47:47:00",
+      "departureTime": "24:17:00"
+    },
+    {
+      "tripId": "59000K107207",
+      "stopSequence": 9,
+      "stopId": "FYH",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:10:00"
+    },
+    {
+      "tripId": "5a000K290660",
+      "stopSequence": 12,
+      "stopId": "SQF",
+      "arrivalTime": "47:50:00",
+      "departureTime": "24:07:00"
+    },
+    {
+      "tripId": "5e000K12200C",
+      "stopSequence": 12,
+      "stopId": "IYH",
+      "arrivalTime": "47:58:00",
+      "departureTime": "24:02:00"
+    },
+    {
+      "tripId": "5f0000T14204",
+      "stopSequence": 8,
+      "stopId": "GTH",
+      "arrivalTime": "47:57:00",
+      "departureTime": "24:01:00"
+    },
+    {
+      "tripId": "5f000D540900",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "13:31:00",
+      "departureTime": "13:28:00"
+    },
+    {
+      "tripId": "5f000D541702",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "17:22:00",
+      "departureTime": "17:18:00"
+    },
+    {
+      "tripId": "5f000D544411",
+      "stopSequence": 10,
+      "stopId": "NJH",
+      "arrivalTime": "10:51:00",
+      "departureTime": "10:48:00"
+    },
+    {
+      "tripId": "5f000D545600",
+      "stopSequence": 8,
+      "stopId": "NJH",
+      "arrivalTime": "13:23:00",
+      "departureTime": "13:20:00"
+    },
+    {
+      "tripId": "5f000D5464A0",
+      "stopSequence": 6,
+      "stopId": "NJH",
+      "arrivalTime": "17:58:00",
+      "departureTime": "17:55:00"
+    },
+    {
+      "tripId": "5f000D549800",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "20:42:00",
+      "departureTime": "20:39:00"
+    },
+    {
+      "tripId": "5f000D550400",
+      "stopSequence": 9,
+      "stopId": "NJH",
+      "arrivalTime": "11:22:00",
+      "departureTime": "11:19:00"
+    },
+    {
+      "tripId": "5j000G711201",
+      "stopSequence": 10,
+      "stopId": "NJH",
+      "arrivalTime": "23:18:00",
+      "departureTime": "23:15:00"
+    },
+    {
+      "tripId": "5j000G758802",
+      "stopSequence": 20,
+      "stopId": "NJH",
+      "arrivalTime": "22:04:00",
+      "departureTime": "22:01:00"
+    },
+    {
+      "tripId": "5l0000D98600",
+      "stopSequence": 4,
+      "stopId": "WCN",
+      "arrivalTime": "47:57:00",
+      "departureTime": "24:03:00"
+    },
+    {
+      "tripId": "5l000D540160",
+      "stopSequence": 6,
+      "stopId": "NJH",
+      "arrivalTime": "08:53:00",
+      "departureTime": "08:50:00"
+    },
+    {
+      "tripId": "5l000D540510",
+      "stopSequence": 10,
+      "stopId": "NJH",
+      "arrivalTime": "12:18:00",
+      "departureTime": "12:17:00"
+    },
+    {
+      "tripId": "5l000D541300",
+      "stopSequence": 10,
+      "stopId": "NJH",
+      "arrivalTime": "16:15:00",
+      "departureTime": "16:12:00"
+    },
+    {
+      "tripId": "5l000G710804",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "13:42:00",
+      "departureTime": "13:40:00"
+    },
+    {
+      "tripId": "5l000G7122E0",
+      "stopSequence": 7,
+      "stopId": "NJH",
+      "arrivalTime": "20:01:00",
+      "departureTime": "19:59:00"
+    },
+    {
+      "tripId": "5l000G8381D1",
+      "stopSequence": 5,
+      "stopId": "NJH",
+      "arrivalTime": "19:54:00",
+      "departureTime": "19:51:00"
+    },
+    {
+      "tripId": "620000T18203",
+      "stopSequence": 27,
+      "stopId": "SBT",
+      "arrivalTime": "71:58:00",
+      "departureTime": "48:06:00"
+    },
+    {
+      "tripId": "64000K13740S",
+      "stopSequence": 10,
+      "stopId": "CSQ",
+      "arrivalTime": "47:50:00",
+      "departureTime": "24:12:00"
+    },
+    {
+      "tripId": "64000K927005",
+      "stopSequence": 7,
+      "stopId": "CSQ",
+      "arrivalTime": "47:58:00",
+      "departureTime": "24:06:00"
+    },
+    {
+      "tripId": "6500000K920Y",
+      "stopSequence": 6,
+      "stopId": "GZG",
+      "arrivalTime": "47:54:00",
+      "departureTime": "24:02:00"
+    },
+    {
+      "tripId": "650000T3980K",
+      "stopSequence": 12,
+      "stopId": "FYH",
+      "arrivalTime": "47:47:00",
+      "departureTime": "24:03:00"
+    },
+    {
+      "tripId": "650000Z2360B",
+      "stopSequence": 3,
+      "stopId": "CZQ",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:03:00"
+    },
+    {
+      "tripId": "71000K113821",
+      "stopSequence": 8,
+      "stopId": "HYQ",
+      "arrivalTime": "47:50:00",
+      "departureTime": "24:04:00"
+    },
+    {
+      "tripId": "760000K29230",
+      "stopSequence": 6,
+      "stopId": "GYW",
+      "arrivalTime": "47:52:00",
+      "departureTime": "24:02:00"
+    },
+    {
+      "tripId": "760000K54680",
+      "stopSequence": 17,
+      "stopId": "XAY",
+      "arrivalTime": "47:23:00",
+      "departureTime": "24:05:00"
+    },
+    {
+      "tripId": "770000K50804",
+      "stopSequence": 8,
+      "stopId": "RXW",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:24:00"
+    },
+    {
+      "tripId": "770000Z22001",
+      "stopSequence": 14,
+      "stopId": "SZN",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:02:00"
+    },
+    {
+      "tripId": "77000K11540K",
+      "stopSequence": 7,
+      "stopId": "XFN",
+      "arrivalTime": "47:48:00",
+      "departureTime": "24:13:00"
+    },
+    {
+      "tripId": "780000K10802",
+      "stopSequence": 10,
+      "stopId": "CSQ",
+      "arrivalTime": "47:57:00",
+      "departureTime": "24:22:00"
+    },
+    {
+      "tripId": "780000K8760B",
+      "stopSequence": 31,
+      "stopId": "VIH",
+      "arrivalTime": "71:54:00",
+      "departureTime": "48:29:00"
+    },
+    {
+      "tripId": "800000C58805",
+      "stopSequence": 2,
+      "stopId": "QJM",
+      "arrivalTime": "21:03:00",
+      "departureTime": "21:01:00"
+    },
+    {
+      "tripId": "800000Z3260B",
+      "stopSequence": 4,
+      "stopId": "UMW",
+      "arrivalTime": "47:55:00",
+      "departureTime": "24:01:00"
+    },
+    {
+      "tripId": "850000K42084",
+      "stopSequence": 14,
+      "stopId": "LYF",
+      "arrivalTime": "47:56:00",
+      "departureTime": "24:06:00"
+    },
+    {
+      "tripId": "880000C88103",
+      "stopSequence": 6,
+      "stopId": "LZO",
+      "arrivalTime": "12:04:00",
+      "departureTime": "11:59:00"
+    },
+    {
+      "tripId": "880000C88209",
+      "stopSequence": 6,
+      "stopId": "LSO",
+      "arrivalTime": "16:32:00",
+      "departureTime": "16:18:00"
+    },
+    {
+      "tripId": "880000C88320",
+      "stopSequence": 2,
+      "stopId": "RKO",
+      "arrivalTime": "19:17:00",
+      "departureTime": "18:57:00"
+    },
+    {
+      "tripId": "880000C88440",
+      "stopSequence": 2,
+      "stopId": "LSO",
+      "arrivalTime": "21:41:00",
+      "departureTime": "21:24:00"
+    },
+    {
+      "tripId": "880000C89304",
+      "stopSequence": 3,
+      "stopId": "GRO",
+      "arrivalTime": "18:39:00",
+      "departureTime": "18:10:00"
+    },
+    {
+      "tripId": "880000C89404",
+      "stopSequence": 5,
+      "stopId": "XNO",
+      "arrivalTime": "13:15:00",
+      "departureTime": "13:11:00"
+    },
+    {
+      "tripId": "880000C89502",
+      "stopSequence": 4,
+      "stopId": "DHO",
+      "arrivalTime": "17:41:00",
+      "departureTime": "17:31:00"
+    },
+    {
+      "tripId": "880000C89601",
+      "stopSequence": 4,
+      "stopId": "XNO",
+      "arrivalTime": "22:36:00",
+      "departureTime": "22:11:00"
+    },
+    {
+      "tripId": "880000Z22409",
+      "stopSequence": 9,
+      "stopId": "CXW",
+      "arrivalTime": "55:01:00",
+      "departureTime": "54:10:00"
+    },
+    {
+      "tripId": "880000Z3780B",
+      "stopSequence": 18,
+      "stopId": "SHH",
+      "arrivalTime": "37:29:00",
+      "departureTime": "37:26:00"
+    },
+    {
+      "tripId": "88000K68310C",
+      "stopSequence": 9,
+      "stopId": "LZO",
+      "arrivalTime": "22:16:00",
+      "departureTime": "21:34:00"
+    },
+    {
+      "tripId": "8b000Z620300",
+      "stopSequence": 4,
+      "stopId": "JGJ",
+      "arrivalTime": "47:59:00",
+      "departureTime": "24:07:00"
+    },
+    {
+      "tripId": "910000C85201",
+      "stopSequence": 5,
+      "stopId": "WAR",
+      "arrivalTime": "13:22:00",
+      "departureTime": "12:54:00"
+    },
+    {
+      "tripId": "910000C85807",
+      "stopSequence": 2,
+      "stopId": "WAR",
+      "arrivalTime": "17:30:00",
+      "departureTime": "17:21:00"
+    },
+    {
+      "tripId": "92000D880306",
+      "stopSequence": 6,
+      "stopId": "WAR",
+      "arrivalTime": "13:08:00",
+      "departureTime": "13:06:00"
+    },
+    {
+      "tripId": "92000D880706",
+      "stopSequence": 5,
+      "stopId": "WAR",
+      "arrivalTime": "16:22:00",
+      "departureTime": "16:15:00"
+    },
+    {
+      "tripId": "92000D881309",
+      "stopSequence": 4,
+      "stopId": "WAR",
+      "arrivalTime": "23:16:00",
+      "departureTime": "23:13:00"
+    },
+    {
+      "tripId": "930000C8210C",
+      "stopSequence": 4,
+      "stopId": "KTR",
+      "arrivalTime": "16:01:00",
+      "departureTime": "14:33:00"
+    },
+    {
+      "tripId": "930000C82307",
+      "stopSequence": 5,
+      "stopId": "WSR",
+      "arrivalTime": "21:24:00",
+      "departureTime": "21:18:00"
+    },
+    {
+      "tripId": "930000C82710",
+      "stopSequence": 5,
+      "stopId": "KTR",
+      "arrivalTime": "17:26:00",
+      "departureTime": "16:36:00"
+    },
+    {
+      "tripId": "930000C8430I",
+      "stopSequence": 7,
+      "stopId": "YMR",
+      "arrivalTime": "14:45:00",
+      "departureTime": "14:28:00"
+    },
+    {
+      "tripId": "930000C8450H",
+      "stopSequence": 2,
+      "stopId": "YMR",
+      "arrivalTime": "15:03:00",
+      "departureTime": "14:59:00"
+    },
+    {
+      "tripId": "930000C85102",
+      "stopSequence": 5,
+      "stopId": "KHR",
+      "arrivalTime": "12:00:00",
+      "departureTime": "11:53:00"
+    },
+    {
+      "tripId": "930000C85301",
+      "stopSequence": 5,
+      "stopId": "KHR",
+      "arrivalTime": "17:25:00",
+      "departureTime": "17:22:00"
+    },
+    {
+      "tripId": "930000C85503",
+      "stopSequence": 4,
+      "stopId": "KHR",
+      "arrivalTime": "20:25:00",
+      "departureTime": "20:20:00"
+    },
+    {
+      "tripId": "930000C85707",
+      "stopSequence": 2,
+      "stopId": "KHR",
+      "arrivalTime": "12:48:00",
+      "departureTime": "12:11:00"
+    },
+    {
+      "tripId": "930000C86104",
+      "stopSequence": 5,
+      "stopId": "BER",
+      "arrivalTime": "12:54:00",
+      "departureTime": "12:23:00"
+    },
+    {
+      "tripId": "930000C86707",
+      "stopSequence": 8,
+      "stopId": "BER",
+      "arrivalTime": "14:03:00",
+      "departureTime": "13:59:00"
+    },
+    {
+      "tripId": "930000C87206",
+      "stopSequence": 2,
+      "stopId": "KLR",
+      "arrivalTime": "20:50:00",
+      "departureTime": "20:47:00"
+    },
+    {
+      "tripId": "930000T25803",
+      "stopSequence": 7,
+      "stopId": "LZJ",
+      "arrivalTime": "30:53:00",
+      "departureTime": "30:41:00"
+    },
+    {
+      "tripId": "930000Z1800K",
+      "stopSequence": 20,
+      "stopId": "XAY",
+      "arrivalTime": "71:55:00",
+      "departureTime": "48:27:00"
+    },
+    {
+      "tripId": "93000D27080J",
+      "stopSequence": 15,
+      "stopId": "EAY",
+      "arrivalTime": "22:02:00",
+      "departureTime": "22:00:00"
+    },
+    {
+      "tripId": "93000D88020B",
+      "stopSequence": 4,
+      "stopId": "HMR",
+      "arrivalTime": "12:19:00",
+      "departureTime": "12:14:00"
+    },
+    {
+      "tripId": "93000D88140B",
+      "stopSequence": 6,
+      "stopId": "HMR",
+      "arrivalTime": "21:48:00",
+      "departureTime": "21:46:00"
+    },
+    {
+      "tripId": "93000K97760C",
+      "stopSequence": 8,
+      "stopId": "TMR",
+      "arrivalTime": "34:59:00",
+      "departureTime": "34:55:00"
+    },
+    {
+      "tripId": "93000K97820M",
+      "stopSequence": 10,
+      "stopId": "AOR",
+      "arrivalTime": "35:40:00",
+      "departureTime": "35:16:00"
+    },
+    {
+      "tripId": "9400000T6201",
+      "stopSequence": 25,
+      "stopId": "LZJ",
+      "arrivalTime": "71:48:00",
+      "departureTime": "48:10:00"
+    },
+    {
+      "tripId": "940000C81204",
+      "stopSequence": 2,
+      "stopId": "WAR",
+      "arrivalTime": "17:10:00",
+      "departureTime": "17:09:00"
+    },
+    {
+      "tripId": "940000C8160N",
+      "stopSequence": 4,
+      "stopId": "WAR",
+      "arrivalTime": "13:38:00",
+      "departureTime": "13:35:00"
+    },
+    {
+      "tripId": "940000C82003",
+      "stopSequence": 6,
+      "stopId": "WAR",
+      "arrivalTime": "21:54:00",
+      "departureTime": "21:51:00"
+    },
+    {
+      "tripId": "940000C87407",
+      "stopSequence": 2,
+      "stopId": "WMR",
+      "arrivalTime": "14:19:00",
+      "departureTime": "13:58:00"
+    },
+    {
+      "tripId": "940000T2700B",
+      "stopSequence": 17,
+      "stopId": "LZJ",
+      "arrivalTime": "71:56:00",
+      "departureTime": "48:31:00"
+    },
+    {
+      "tripId": "94000K975507",
+      "stopSequence": 5,
+      "stopId": "WAR",
+      "arrivalTime": "22:33:00",
+      "departureTime": "22:29:00"
+    },
+    {
+      "tripId": "94000K97780D",
+      "stopSequence": 7,
+      "stopId": "WAR",
+      "arrivalTime": "32:37:00",
+      "departureTime": "32:35:00"
+    },
+    {
+      "tripId": "94000T951830",
+      "stopSequence": 4,
+      "stopId": "WAR",
+      "arrivalTime": "32:14:00",
+      "departureTime": "32:12:00"
+    },
+    {
+      "tripId": "94000T95280J",
+      "stopSequence": 16,
+      "stopId": "WAR",
+      "arrivalTime": "36:11:00",
+      "departureTime": "36:10:00"
+    },
+    {
+      "tripId": "94000T953802",
+      "stopSequence": 3,
+      "stopId": "WAR",
+      "arrivalTime": "34:00:00",
+      "departureTime": "33:33:00"
+    },
+    {
+      "tripId": "94000Z651802",
+      "stopSequence": 2,
+      "stopId": "WAR",
+      "arrivalTime": "33:02:00",
+      "departureTime": "33:00:00"
+    },
+    {
+      "tripId": "950000C8240B",
+      "stopSequence": 4,
+      "stopId": "WAR",
+      "arrivalTime": "18:27:00",
+      "departureTime": "18:25:00"
+    },
+    {
+      "tripId": "950000C83004",
+      "stopSequence": 4,
+      "stopId": "WAR",
+      "arrivalTime": "20:24:00",
+      "departureTime": "19:21:00"
+    },
+    {
+      "tripId": "950000C8440I",
+      "stopSequence": 6,
+      "stopId": "WAR",
+      "arrivalTime": "20:50:00",
+      "departureTime": "20:41:00"
+    },
+    {
+      "tripId": "950000C84804",
+      "stopSequence": 2,
+      "stopId": "WAR",
+      "arrivalTime": "14:14:00",
+      "departureTime": "14:12:00"
+    },
+    {
+      "tripId": "950000C86401",
+      "stopSequence": 2,
+      "stopId": "WAR",
+      "arrivalTime": "17:21:00",
+      "departureTime": "17:12:00"
+    },
+    {
+      "tripId": "95000K985600",
+      "stopSequence": 7,
+      "stopId": "WMR",
+      "arrivalTime": "20:14:00",
+      "departureTime": "20:09:00"
+    },
+    {
+      "tripId": "95000T957200",
+      "stopSequence": 7,
+      "stopId": "WAR",
+      "arrivalTime": "31:11:00",
+      "departureTime": "31:05:00"
+    }
+  ]
+}

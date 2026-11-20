@@ -1,0 +1,27 @@
+flowchart LR
+    subgraph client ["访问端"]
+        webApp["Web SPA
+访客 / 购票用户 / 管理员"]
+    end
+    subgraph gateway ["同源接入"]
+        nginx["Nginx
+静态托管 / 反向代理"]
+    end
+    subgraph service ["RailFlow 单体后端"]
+        railflowServer["railflow-server
+Java 17 / Spring Boot 3
+业务 / 鉴权 / 超时扫描"]
+    end
+    subgraph datastore ["业务数据"]
+        mysql["MySQL 8
+账户 / 车次 / 库存
+订单 / 乘车人 / 日志"]
+    end
+    subgraph external ["外部依赖"]
+        llm["LLM API
+只解析查票意图"]
+    end
+    webApp -->|"HTTP / JSON"| nginx
+    nginx -->|"/api 反向代理"| railflowServer
+    railflowServer -->|"MyBatis 事务读写"| mysql
+    railflowServer -.->|"LLM API：查询表单预填"| llm

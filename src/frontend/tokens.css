@@ -1,0 +1,122 @@
+/* RailFlow 设计令牌
+ * 颜色、字号、间距、圆角、阴影、层级都从这里取；组件样式不散写颜色。
+ * 依据 frontend-spec.md §5。
+ */
+
+:root {
+  color-scheme: light;
+
+  /* 基础色 → 语义色 */
+  --color-surface: #ffffff;
+  --color-surface-hover: #f2f6fa;
+  --color-surface-pressed: #e8eff7;
+  --color-surface-sunken: #f6f8fa;
+  --color-map-land: #eff3f6;
+  --color-map-water: #80dfff;
+  --color-primary: #145fe0;
+  --color-primary-hover: #104db8;
+  --color-primary-pressed: #0b3d92;
+  --color-primary-soft: #ebf2ff;
+  --color-text: #17212b;
+  --color-text-muted: #667685;
+  --color-border: #d9e1e8;
+  --color-control-border: #7f8f9f;
+  --color-success: #176b4b;
+  --color-success-soft: #eaf6f0;
+  --color-warning: #935b00;
+  --color-warning-soft: #fff6e5;
+  --color-danger: #b42332;
+  --color-danger-soft: #fdecee;
+  --color-scrim: rgba(23, 33, 43, 0.32);
+  --color-focus-ring: #145fe0;
+  --color-label-backing: rgba(255, 255, 255, 0.94);
+
+  /* 路线令牌（与成功/错误语义无关） */
+  --color-route-main: #00c86e;
+  --color-route-outline: #0b8655;
+  --color-route-arrow-outline: #064c34;
+  --color-route-alternative: #b8decf;
+  --color-route-alternative-outline: #568b74;
+  --color-route-start: #00856a;
+  --color-route-end: #c92e49;
+  --color-route-waypoint: #f2c94c;
+  --color-route-waypoint-ink: #5f4b0b;
+  --color-route-label: #17212b;
+
+  /* 字体 */
+  --font-family-ui: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+  --font-size-caption: 12px;
+  --line-height-caption: 18px;
+  --font-size-body: 14px;
+  --line-height-body: 22px;
+  --font-size-control: 16px;
+  --line-height-control: 24px;
+  --font-size-title: 20px;
+  --line-height-title: 28px;
+  --font-size-time: 24px;
+  --line-height-time: 28px;
+  --font-size-price: 18px;
+  --line-height-price: 24px;
+  --font-weight-regular: 400;
+  --font-weight-strong: 600;
+
+  /* 间距 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* 圆角 */
+  --radius-tag: 4px;
+  --radius-control: 8px;
+  --radius-popover: 12px;
+  --radius-panel: 16px;
+  --radius-pill: 999px;
+
+  /* 阴影 */
+  --shadow-panel: 0 6px 24px rgba(23, 33, 43, 0.14);
+  --shadow-popover: 0 2px 8px rgba(23, 33, 43, 0.1);
+
+  /* 层级 */
+  --z-map: 0;
+  --z-map-overlay: 2;
+  --z-map-controls: 10;
+  --z-panel: 20;
+  --z-popover: 30;
+  --z-modal-backdrop: 40;
+  --z-modal: 50;
+  --z-feedback: 60;
+
+  /* 尺寸 */
+  --control-min-size: 44px;
+  --panel-width: 360px;
+  --panel-top: 96px;
+  --search-width: 360px;
+  --search-height: 56px;
+  --edge-tab-width: 44px;
+  --edge-margin: 24px;
+  --topbar-gap: 12px;
+  --top-actions-height: 48px;
+
+  /* 动效 */
+  --motion-fast: 150ms;
+  --motion-panel: 220ms;
+  --motion-state: 160ms;
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  :root {
+    --panel-width: 320px;
+    --edge-margin: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-panel: 0ms;
+    --motion-state: 0ms;
+  }
+}

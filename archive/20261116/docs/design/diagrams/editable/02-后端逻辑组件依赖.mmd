@@ -1,0 +1,39 @@
+flowchart LR
+    webApp["Web SPA"]
+    subgraph backend ["railflow-server：同一 JVM 内的逻辑组件"]
+        controllers["Controllers
+参数 / 会话 / 权限"]
+        accountServices["AuthService
+PassengerService"]
+        queryService["TrainQueryService"]
+        orderServices["OrderService
+PaymentService / RefundService"]
+        inventoryService["InventoryService"]
+        adminServices["AdminService
+AuditLogService"]
+        timeoutJob["OrderTimeoutJob
+每 30 秒触发"]
+        aiService["AiQueryService
+抽取 / 本地校验"]
+        mappers["MyBatis Mappers"]
+        llmClient["LLM 客户端"]
+    end
+    database[("MySQL 8")]
+    llmApi["外部 LLM API"]
+    webApp -->|"REST 请求"| controllers
+    controllers --> accountServices
+    controllers --> queryService
+    controllers --> orderServices
+    controllers --> adminServices
+    controllers --> aiService
+    timeoutJob -->|"超时失效"| orderServices
+    orderServices -->|"锁座与释放"| inventoryService
+    accountServices --> mappers
+    queryService --> mappers
+    orderServices --> mappers
+    inventoryService --> mappers
+    adminServices --> mappers
+    mappers -->|"SQL"| database
+    aiService --> llmClient
+    llmClient -.->|"结构化抽取"| llmApi
+    style backend fill:#F5F5F5,stroke:#B3B3B3

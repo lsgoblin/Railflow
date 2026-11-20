@@ -1,0 +1,63 @@
+erDiagram
+    direction LR
+    account["Account 账户"] {
+        long id PK
+        string email UK
+        string passwordHash
+        string role
+    }
+    passenger["Passenger 乘车人"] {
+        long id PK
+        long accountId FK
+        string name
+        string idCardMasked
+    }
+    train["Train 车次"] {
+        long id PK
+        string code
+        string fromStation
+        string toStation
+        time departTime
+        time arriveTime
+        decimal price
+    }
+    trainRun["TrainRun 日期车次"] {
+        long id PK
+        long trainId FK
+        date runDate
+        bool salesOpen
+    }
+    seatInventory["SeatInventory 库存"] {
+        long runId PK, FK
+        int capacity
+        int lockedSeats
+        int confirmedSeats
+    }
+    bookingOrder["Order 订单"] {
+        long id PK
+        long accountId FK
+        long runId FK
+        long passengerId FK
+        string status
+        datetime expireAt
+        decimal price
+        decimal refundFee
+        int version
+    }
+    operationLog["OperationLog 操作记录"] {
+        long id PK
+        long orderId FK
+        string actor
+        string action
+        string fromStatus
+        string toStatus
+        string reason
+        datetime at
+    }
+    account ||--o{ passenger : "拥有"
+    account ||--o{ bookingOrder : "下单"
+    train ||--o{ trainRun : "按日开行"
+    trainRun ||--|| seatInventory : "对应"
+    trainRun ||--o{ bookingOrder : "被预订"
+    passenger ||--o{ bookingOrder : "关联"
+    bookingOrder ||--o{ operationLog : "产生"

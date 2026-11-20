@@ -1,0 +1,56 @@
+{
+  "url": "https://www.figma.com/board/H6iQuZDMjtkllAfGDTAkHj",
+  "fileKey": "H6iQuZDMjtkllAfGDTAkHj",
+  "diagrams": [
+    {
+      "number": 1,
+      "name": "RailFlow 01 系统总体架构",
+      "id": "1:2"
+    },
+    {
+      "number": 2,
+      "name": "RailFlow 02 后端逻辑组件依赖",
+      "id": "11:793"
+    },
+    {
+      "number": 3,
+      "name": "RailFlow 03 部署架构",
+      "id": "3:104"
+    },
+    {
+      "number": 4,
+      "name": "RailFlow 04 领域数据关系",
+      "id": "11:794"
+    },
+    {
+      "number": 5,
+      "name": "RailFlow 05 订单状态机",
+      "id": "11:795"
+    },
+    {
+      "number": 6,
+      "name": "RailFlow 06 下单锁座成功时序",
+      "id": "6:479"
+    },
+    {
+      "number": 7,
+      "name": "RailFlow 07 模拟支付成功时序",
+      "id": "7:556"
+    },
+    {
+      "number": 8,
+      "name": "RailFlow 08 超时扫描与幂等释放",
+      "id": "11:796"
+    },
+    {
+      "number": 9,
+      "name": "RailFlow 09 AI 查票成功时序",
+      "id": "9:667"
+    },
+    {
+      "number": 10,
+      "name": "RailFlow 10 AI 查票与手动降级用户流程",
+      "id": "11:797"
+    }
+  ]
+}

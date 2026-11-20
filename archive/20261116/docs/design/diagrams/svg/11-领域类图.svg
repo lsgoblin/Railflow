@@ -1,0 +1,123 @@
+<svg width="1240" height="1010" viewBox="0 0 1240 1010" xmlns="http://www.w3.org/2000/svg">
+<rect width="1240" height="1010" fill="#FFFFFF"/>
+<g font-family="'Microsoft YaHei','Segoe UI','PingFang SC',sans-serif">
+<line x1="220" y1="246" x2="220" y2="300" stroke="#5F7082" stroke-width="1.4"/>
+<text x="210.0" y="262.0" font-size="10.5" fill="#6B7A89" text-anchor="end">1</text>
+<text x="210.0" y="284.0" font-size="10.5" fill="#6B7A89" text-anchor="end">0..*</text>
+<line x1="380" y1="180" x2="460" y2="420" stroke="#5F7082" stroke-width="1.4"/>
+<text x="394.5" y="192.0" font-size="10.5" fill="#6B7A89" text-anchor="end">1</text>
+<text x="445.5" y="408.0" font-size="10.5" fill="#6B7A89" text-anchor="end">0..*</text>
+<line x1="380" y1="380" x2="460" y2="380" stroke="#5F7082" stroke-width="1.4"/>
+<text x="396.0" y="390.0" font-size="10.5" fill="#6B7A89" text-anchor="end">1</text>
+<text x="444.0" y="390.0" font-size="10.5" fill="#6B7A89" text-anchor="end">0..*</text>
+<line x1="780" y1="130" x2="860" y2="130" stroke="#5F7082" stroke-width="1.4"/>
+<text x="796.0" y="140.0" font-size="10.5" fill="#6B7A89" text-anchor="end">1</text>
+<text x="844.0" y="140.0" font-size="10.5" fill="#6B7A89" text-anchor="end">0..*</text>
+<line x1="1020" y1="224" x2="1020" y2="300" stroke="#5F7082" stroke-width="1.4"/>
+<text x="1010.0" y="240.0" font-size="10.5" fill="#6B7A89" text-anchor="end">1</text>
+<text x="1010.0" y="284.0" font-size="10.5" fill="#6B7A89" text-anchor="end">1</text>
+<line x1="860" y1="180" x2="780" y2="480" stroke="#5F7082" stroke-width="1.4"/>
+<text x="846.2" y="192.9" font-size="10.5" fill="#6B7A89" text-anchor="end">1</text>
+<text x="793.8" y="467.1" font-size="10.5" fill="#6B7A89" text-anchor="start">0..*</text>
+<line x1="460" y1="620" x2="380" y2="620" stroke="#5F7082" stroke-width="1.4"/>
+<text x="444.0" y="610.0" font-size="10.5" fill="#6B7A89" text-anchor="end">1</text>
+<text x="396.0" y="610.0" font-size="10.5" fill="#6B7A89" text-anchor="start">0..*</text>
+<line x1="620" y1="722" x2="620" y2="800" stroke="#5F7082" stroke-width="1.4"/>
+<text x="610.0" y="738.0" font-size="10.5" fill="#6B7A89" text-anchor="end">0..*</text>
+<text x="610.0" y="784.0" font-size="10.5" fill="#6B7A89" text-anchor="end">1</text>
+<rect x="60" y="60" width="320" height="186" rx="8" fill="#FFFFFF" stroke="#9AA7B4" stroke-width="1.6"/>
+<path d="M60 68 q0 -8 8 -8 h304 q8 0 8 8 v28 h-320 z" fill="#EDF3F9" stroke="#9AA7B4" stroke-width="1.6"/>
+<text x="220.0" y="84" font-size="15" font-weight="700" fill="#1B2A38" text-anchor="middle">Account 账户</text>
+<text x="74" y="112" font-size="12.5" fill="#2B3A48">id: Long</text>
+<text x="74" y="134" font-size="12.5" fill="#2B3A48">email: String</text>
+<text x="74" y="156" font-size="12.5" fill="#2B3A48">passwordHash: String</text>
+<text x="74" y="178" font-size="12.5" fill="#2B3A48">role: Role</text>
+<line x1="60" y1="190" x2="380" y2="190" stroke="#C9D3DD" stroke-width="1"/>
+<text x="74" y="208" font-size="12.5" fill="#1F4E79">+ authenticate(raw): boolean</text>
+<text x="74" y="230" font-size="12.5" fill="#1F4E79">+ isAdmin(): boolean</text>
+<rect x="60" y="300" width="320" height="164" rx="8" fill="#FFFFFF" stroke="#9AA7B4" stroke-width="1.6"/>
+<path d="M60 308 q0 -8 8 -8 h304 q8 0 8 8 v28 h-320 z" fill="#EDF3F9" stroke="#9AA7B4" stroke-width="1.6"/>
+<text x="220.0" y="324" font-size="15" font-weight="700" fill="#1B2A38" text-anchor="middle">Passenger 乘车人</text>
+<text x="74" y="352" font-size="12.5" fill="#2B3A48">id: Long</text>
+<text x="74" y="374" font-size="12.5" fill="#2B3A48">accountId: Long</text>
+<text x="74" y="396" font-size="12.5" fill="#2B3A48">name: String</text>
+<text x="74" y="418" font-size="12.5" fill="#2B3A48">idCardMasked: String</text>
+<line x1="60" y1="430" x2="380" y2="430" stroke="#C9D3DD" stroke-width="1"/>
+<text x="74" y="448" font-size="12.5" fill="#1F4E79">+ ownerId(): Long</text>
+<rect x="460" y="60" width="320" height="252" rx="8" fill="#FFFFFF" stroke="#9AA7B4" stroke-width="1.6"/>
+<path d="M460 68 q0 -8 8 -8 h304 q8 0 8 8 v28 h-320 z" fill="#EDF3F9" stroke="#9AA7B4" stroke-width="1.6"/>
+<text x="620.0" y="84" font-size="15" font-weight="700" fill="#1B2A38" text-anchor="middle">Train 车次</text>
+<text x="474" y="112" font-size="12.5" fill="#2B3A48">id: Long</text>
+<text x="474" y="134" font-size="12.5" fill="#2B3A48">code: String</text>
+<text x="474" y="156" font-size="12.5" fill="#2B3A48">fromStation: String</text>
+<text x="474" y="178" font-size="12.5" fill="#2B3A48">toStation: String</text>
+<text x="474" y="200" font-size="12.5" fill="#2B3A48">departTime: LocalTime</text>
+<text x="474" y="222" font-size="12.5" fill="#2B3A48">arriveTime: LocalTime</text>
+<text x="474" y="244" font-size="12.5" fill="#2B3A48">price: BigDecimal</text>
+<line x1="460" y1="256" x2="780" y2="256" stroke="#C9D3DD" stroke-width="1"/>
+<text x="474" y="274" font-size="12.5" fill="#1F4E79">+ openRun(date): TrainRun</text>
+<text x="474" y="296" font-size="12.5" fill="#1F4E79">+ isEditable(): boolean</text>
+<rect x="460" y="360" width="320" height="362" rx="8" fill="#FFFFFF" stroke="#9AA7B4" stroke-width="1.6"/>
+<path d="M460 368 q0 -8 8 -8 h304 q8 0 8 8 v28 h-320 z" fill="#EDF3F9" stroke="#9AA7B4" stroke-width="1.6"/>
+<text x="620.0" y="384" font-size="15" font-weight="700" fill="#1B2A38" text-anchor="middle">Order 订单</text>
+<text x="474" y="412" font-size="12.5" fill="#2B3A48">id: Long</text>
+<text x="474" y="434" font-size="12.5" fill="#2B3A48">accountId: Long</text>
+<text x="474" y="456" font-size="12.5" fill="#2B3A48">runId: Long</text>
+<text x="474" y="478" font-size="12.5" fill="#2B3A48">passengerId: Long</text>
+<text x="474" y="500" font-size="12.5" fill="#2B3A48">status: OrderStatus</text>
+<text x="474" y="522" font-size="12.5" fill="#2B3A48">expireAt: LocalDateTime</text>
+<text x="474" y="544" font-size="12.5" fill="#2B3A48">price: BigDecimal</text>
+<text x="474" y="566" font-size="12.5" fill="#2B3A48">refundFee: BigDecimal</text>
+<text x="474" y="588" font-size="12.5" fill="#2B3A48">version: int</text>
+<line x1="460" y1="600" x2="780" y2="600" stroke="#C9D3DD" stroke-width="1"/>
+<text x="474" y="618" font-size="12.5" fill="#1F4E79">+ pay(now): boolean</text>
+<text x="474" y="640" font-size="12.5" fill="#1F4E79">+ cancel(): boolean</text>
+<text x="474" y="662" font-size="12.5" fill="#1F4E79">+ expire(now): boolean</text>
+<text x="474" y="684" font-size="12.5" fill="#1F4E79">+ refund(now): boolean</text>
+<text x="474" y="706" font-size="12.5" fill="#1F4E79">+ isActive(): boolean</text>
+<rect x="860" y="60" width="320" height="164" rx="8" fill="#FFFFFF" stroke="#9AA7B4" stroke-width="1.6"/>
+<path d="M860 68 q0 -8 8 -8 h304 q8 0 8 8 v28 h-320 z" fill="#EDF3F9" stroke="#9AA7B4" stroke-width="1.6"/>
+<text x="1020.0" y="84" font-size="15" font-weight="700" fill="#1B2A38" text-anchor="middle">TrainRun 日期车次</text>
+<text x="874" y="112" font-size="12.5" fill="#2B3A48">id: Long</text>
+<text x="874" y="134" font-size="12.5" fill="#2B3A48">trainId: Long</text>
+<text x="874" y="156" font-size="12.5" fill="#2B3A48">runDate: LocalDate</text>
+<text x="874" y="178" font-size="12.5" fill="#2B3A48">salesOpen: boolean</text>
+<line x1="860" y1="190" x2="1180" y2="190" stroke="#C9D3DD" stroke-width="1"/>
+<text x="874" y="208" font-size="12.5" fill="#1F4E79">+ isOnSale(now): boolean</text>
+<rect x="860" y="300" width="320" height="252" rx="8" fill="#FFFFFF" stroke="#9AA7B4" stroke-width="1.6"/>
+<path d="M860 308 q0 -8 8 -8 h304 q8 0 8 8 v28 h-320 z" fill="#EDF3F9" stroke="#9AA7B4" stroke-width="1.6"/>
+<text x="1020.0" y="324" font-size="15" font-weight="700" fill="#1B2A38" text-anchor="middle">SeatInventory 库存</text>
+<text x="874" y="352" font-size="12.5" fill="#2B3A48">runId: Long</text>
+<text x="874" y="374" font-size="12.5" fill="#2B3A48">capacity: int</text>
+<text x="874" y="396" font-size="12.5" fill="#2B3A48">lockedSeats: int</text>
+<text x="874" y="418" font-size="12.5" fill="#2B3A48">confirmedSeats: int</text>
+<line x1="860" y1="430" x2="1180" y2="430" stroke="#C9D3DD" stroke-width="1"/>
+<text x="874" y="448" font-size="12.5" fill="#1F4E79">+ available(): int</text>
+<text x="874" y="470" font-size="12.5" fill="#1F4E79">+ tryLock(): boolean</text>
+<text x="874" y="492" font-size="12.5" fill="#1F4E79">+ releaseLock(): void</text>
+<text x="874" y="514" font-size="12.5" fill="#1F4E79">+ confirm(): void</text>
+<text x="874" y="536" font-size="12.5" fill="#1F4E79">+ release(): void</text>
+<rect x="60" y="520" width="320" height="252" rx="8" fill="#FFFFFF" stroke="#9AA7B4" stroke-width="1.6"/>
+<path d="M60 528 q0 -8 8 -8 h304 q8 0 8 8 v28 h-320 z" fill="#EDF3F9" stroke="#9AA7B4" stroke-width="1.6"/>
+<text x="220.0" y="544" font-size="15" font-weight="700" fill="#1B2A38" text-anchor="middle">OperationLog 操作记录</text>
+<text x="74" y="572" font-size="12.5" fill="#2B3A48">id: Long</text>
+<text x="74" y="594" font-size="12.5" fill="#2B3A48">orderId: Long</text>
+<text x="74" y="616" font-size="12.5" fill="#2B3A48">actor: String</text>
+<text x="74" y="638" font-size="12.5" fill="#2B3A48">action: String</text>
+<text x="74" y="660" font-size="12.5" fill="#2B3A48">fromStatus: String</text>
+<text x="74" y="682" font-size="12.5" fill="#2B3A48">toStatus: String</text>
+<text x="74" y="704" font-size="12.5" fill="#2B3A48">reason: String</text>
+<text x="74" y="726" font-size="12.5" fill="#2B3A48">at: LocalDateTime</text>
+<line x1="60" y1="738" x2="380" y2="738" stroke="#C9D3DD" stroke-width="1"/>
+<text x="74" y="756" font-size="12.5" fill="#1F4E79">+ record(order, actor, action)</text>
+<rect x="460" y="800" width="320" height="158" rx="8" fill="#FFFFFF" stroke="#9AA7B4" stroke-width="1.6"/>
+<path d="M460 808 q0 -8 8 -8 h304 q8 0 8 8 v44 h-320 z" fill="#EDF3F9" stroke="#9AA7B4" stroke-width="1.6"/>
+<text x="620.0" y="819" font-size="10.5" fill="#6B7A89" text-anchor="middle">«enumeration»</text>
+<text x="620.0" y="835" font-size="15" font-weight="700" fill="#1B2A38" text-anchor="middle">OrderStatus 订单状态</text>
+<text x="474" y="868" font-size="12.5" fill="#2B3A48">PENDING</text>
+<text x="474" y="890" font-size="12.5" fill="#2B3A48">CONFIRMED</text>
+<text x="474" y="912" font-size="12.5" fill="#2B3A48">CANCELLED</text>
+<text x="474" y="934" font-size="12.5" fill="#2B3A48">EXPIRED</text>
+<text x="474" y="956" font-size="12.5" fill="#2B3A48">REFUNDED</text>
+</g>
+</svg>

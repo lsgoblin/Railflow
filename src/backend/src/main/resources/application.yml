@@ -1,0 +1,46 @@
+# RailFlow MVP backend shared configuration.
+# Connection values come from environment variables exported by the local private
+# loader (output/mysql-mvp/load-env.ps1). They are never written into the repository.
+spring:
+  application:
+    name: railflow-backend
+  profiles:
+    default: web
+  datasource:
+    url: ${DB_URL:}
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      pool-name: railflow-pool
+      maximum-pool-size: 6
+      minimum-idle: 1
+      connection-timeout: 5000
+      # Do not fail startup when the database is unreachable: the read-only API must be
+      # able to answer 503 DATABASE_UNAVAILABLE instead of refusing to boot.
+      initialization-fail-timeout: -1
+  jackson:
+    default-property-inclusion: always
+  mvc:
+    throw-exception-if-no-handler-found: true
+  web:
+    resources:
+      add-mappings: false
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    whitelabel:
+      enabled: false
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    default-statement-timeout: 30
+
+logging:
+  level:
+    root: INFO
+    com.railflow: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level %logger{36} - %msg%n"

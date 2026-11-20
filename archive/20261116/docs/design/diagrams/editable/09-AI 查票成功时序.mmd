@@ -1,0 +1,17 @@
+sequenceDiagram
+    title AI 查票：解析预填与用户确认
+    participant user
+    participant webApp
+    participant aiQueryService
+    participant llmApi
+    participant trainQueryService
+    user->>webApp: 输入出发站、目的地和日期描述
+    webApp->>aiQueryService: POST /api/ai/parse
+    aiQueryService->>llmApi: 结构化抽取，附站点字典和服务端日期
+    llmApi-->>aiQueryService: fromStation、toStation、date
+    aiQueryService-->>webApp: 校验通过的预填建议
+    webApp-->>user: 回填三个框，可检查与修改
+    user->>webApp: 点击查车次
+    webApp->>trainQueryService: GET /api/trains
+    trainQueryService-->>webApp: 数据库查询所得车次、票价、余票
+    webApp-->>user: 车次列表
