@@ -16,7 +16,7 @@
 | 带批注参考文献 | [references.md](references.md) | 八项官方/上游来源，逐项 200–300 字批注 |
 | 团队成员贡献 | [team-contributions.md](team-contributions.md) | 姓名/学号/人数，分析、建模、设计、决策与实施验收的责任 |
 
-正文使用的图件见 [figures/](figures/README.md)，原型截图与来源说明见 [images/](images/README.md)。九份正文用到的图片与相互引用都在本目录内；指向 [功能清单](../feature-list.md) 与 [MVP 契约](../mvp-contract.md) 的链接属项目仓库的设计依据，不在本包内，各份正文已把所依赖的结论自述一遍。
+正文使用的图件见 [figures/](figures/README.md)，原型截图与来源说明见 [images/](images/README.md)。九份正文用到的图片与相互引用都在本目录内，正文不设指向本目录之外的链接。文中提到的功能清单与 MVP 契约属项目仓库的设计依据，不随本包提交，各份正文已把所依赖的结论自述一遍。
 
 ## 当前状态
 

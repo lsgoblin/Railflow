@@ -16,7 +16,7 @@ This directory holds the design artifacts for Assignment 2: nine main documents 
 | Annotated References | [references.md](references.md) | Eight official/upstream sources, each with a 200–300 word annotation |
 | Team Member Contributions | [team-contributions.md](team-contributions.md) | Name/student ID/team size, and responsibilities for analysis, modeling, design, decisions, and implementation acceptance |
 
-Figures used in the main documents are listed in [figures/](figures/README.md); prototype screenshots and source notes are listed in [images/](images/README.md). The images used by the nine documents and their cross-references all stay within this directory; the only external references are [feature list](../feature-list.md) and [MVP contract](../mvp-contract.md) in the project repository, which are not part of this package.
+Figures used in the main documents are listed in [figures/](figures/README.md); prototype screenshots and source notes are listed in [images/](images/README.md). The images used by the nine documents and their cross-references all stay within this directory, and no document links outside it.
 
 ## Current Status
 
@@ -26,6 +26,6 @@ Figures used in the main documents are listed in [figures/](figures/README.md); 
 
 ## Scope Boundaries
 
-- The authoritative version of the full product requirements is maintained in the project repository; this package submits only the design artifacts and the necessary supporting basis. Links to ../feature-list.md and ../mvp-contract.md point into that repository and do not resolve inside this package; each document restates the conclusions it relies on.
+- The authoritative version of the full product requirements is maintained in the project repository; this package submits only the design artifacts and the necessary supporting basis. The feature list and the MVP contract named in the documents belong to that repository and are not submitted with this package; each document restates the conclusions it relies on.
 - The slides used for the class presentation are the ticketing-version script of that time; their scope differs from this version, and they are not submitted with this package.
 - The figures express the target design; the numbers and status are governed by the nine body documents, not by the figures. The scope and gaps of runtime verification are stated in each document.

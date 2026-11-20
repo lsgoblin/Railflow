@@ -2,9 +2,9 @@
 
 Sihan Li | 2453202 | CD-20261119 | Detailed design, independently reviewed
 
-This draft gives the domain relationships, behavior, and service operations that can guide implementation. The names in the tables are design objects, not generated Java classes or database tables; the tables and HTTP/DTO for this round's import, query, and geometry follow the [MVP contract](../mvp-contract.md), and the remaining complete product contract still awaits review. Business open items are collected in [Open Issues, Risks and Validation](open-issues-risks.md).
+This draft gives the domain relationships, behavior, and service operations that can guide implementation. The names in the tables are design objects, not generated Java classes or database tables; the tables and HTTP/DTO for this round's import, query, and geometry follow the MVP contract, and the remaining complete product contract still awaits review. Business open items are collected in [Open Issues, Risks and Validation](open-issues-risks.md).
 
-The current MVP takes only the import and geometry parts of this document (§6, §7); scope and acceptance appear in the [feature list §2](../feature-list.md#mvp). The remaining use cases are retained as complete product design and fall outside this round's implementation scope.
+The current MVP takes only the import and geometry parts of this document (§6, §7); scope and acceptance appear in the feature list §2. The remaining use cases are retained as complete product design and fall outside this round's implementation scope.
 
 The current data-quality position follows MVP-C1.2 §3.1: the 193 known source timetable anomalies of the fixed hash are retained at their listed original values with a public warning, and other anomalies still fail hard; activation means that import and anomaly classification are complete, and does not guarantee that all times are correct. Whole-journey connection/transfer remains deferred, and these anomalies cannot be used to claim that connections have been verified.
 
@@ -42,7 +42,7 @@ Figure 3: Key entity relationships; [editable SVG](figures/03-domain-model.svg).
 
 The proposal stores user data in `plans / visit_nodes / plan_snapshots / simulation_records`, and stores stations, train runs, stop times, service days, and track geometry in versioned data tables. Larger shapes can be read by shapeId and version index, without copying nationwide geometry into each itinerary. An itinerary snapshot keeps the necessary segments and source references; before the version deletion/retention policy is settled, no claim may state that old results can be restored permanently.
 
-The proposed unique keys cover the run identity `(datasetVersion, tripId, referenceServiceDate)` and the write-request identity `(ownerId, operation, clientRequestId)`; actual table names, fields, indexes, and migrations go to later review. The user data tables and migrations proposed above are not yet implemented; the MVP schema, nine-file import, and geometry service appear in §6, §7 and the [MVP contract](../mvp-contract.md), and the two are not conflated.
+The proposed unique keys cover the run identity `(datasetVersion, tripId, referenceServiceDate)` and the write-request identity `(ownerId, operation, clientRequestId)`; actual table names, fields, indexes, and migrations go to later review. The user data tables and migrations proposed above are not yet implemented; the MVP schema, nine-file import, and geometry service appear in §6, §7 and the MVP contract, and the two are not conflated.
 
 ## 2. UC-01 City Route Building and Historical Itinerary Computation
 
@@ -102,7 +102,7 @@ Restore re-validates the owner, reads the plan and version anchors, and discards
 | `restorePlan` | user, planId | A complete restorable snapshot; other users' objects are unreadable |
 | `createSimulation` | user, candidateSnapshot, clientRequestId | A simulation record deduplicated by the same ID; involves neither payment nor seat inventory |
 | `importDataset` | fixed package source, expected hash | Import report and version status; a validation failure does not activate and does not overwrite the version in use |
-| `listSegmentTrips` | origin/destination station `stop_id`, dataset version, original reference service day; per confirmed [OPEN-16](../feature-list.md), an in-package date can be selected, with the default day returned by context | List of direct services on the same train; no direct service and no service on that day are returned separately, and transfers are not used to fill the gap |
+| `listSegmentTrips` | origin/destination station `stop_id`, dataset version, original reference service day; per confirmed OPEN-16, an in-package date can be selected, with the default day returned by context | List of direct services on the same train; no direct service and no service on that day are returned separately, and transfers are not used to fill the gap |
 | `getSegmentGeometry` | train run, boarding/alighting station `stop_id`, dataset version | Clipped segment track geometry and coordinates, verification status; a missing shape or non-unique boundary returns unavailable |
 
 The public HTTP contract continues to use `/api`, Session, and the unified error body; 409 indicates a business conflict, and 422 indicates a parse/validation failure. This round's concrete paths, status codes, and DTOs appear in the MVP contract; public historical data is read-only, with no user write or administrator interface. The remaining complete product contract is reviewed later, and frontend live placeholder paths are not claimed as an established backend contract.
@@ -123,7 +123,7 @@ Proposed tables (names pending review): `dataset_version`, `gtfs_stop`, `gtfs_tr
 
 Only after import activation are station search, train stop sequences, complete timetables, and service-day queries provided; an inactive version must not be referenced by geometry or itineraries. The `DatasetVersion` status and record counts distinguish "imported" from "queryable"; they are not the same thing.
 
-MVP station candidates display the station name and `stop_id`; station selection and segment queries associate by `stop_id`, and details display the station IDs at both ends. Per confirmed [OPEN-16](../feature-list.md), a reference service day within the package can be selected, defaulting to 2026-11-16; times are evaluated directly on the original reference service day, and the D0/R0 offset is deferred. Complete nine-file loading, batch import/activation/retry, fields/indexes, and read-only HTTP are implemented per the MVP contract.
+MVP station candidates display the station name and `stop_id`; station selection and segment queries associate by `stop_id`, and details display the station IDs at both ends. Per confirmed OPEN-16, a reference service day within the package can be selected, defaulting to 2026-11-16; times are evaluated directly on the original reference service day, and the D0/R0 offset is deferred. Complete nine-file loading, batch import/activation/retry, fields/indexes, and read-only HTTP are implemented per the MVP contract.
 
 ## 7. Segment Track Geometry
 
@@ -137,4 +137,4 @@ The input is the boarding/alighting station `stop_id` on the same train run; the
 
 Acceptance rests on segment-by-segment comparison with the real railway alignment using fixed samples; "having a shape_id" or a synthesized polyline does not count as passing.
 
-Implementation status as of 2026-11-19: §6 and §7 are implemented per the [MVP contract](../mvp-contract.md); the whole-package import of the fixed package, direct services, stop details, and segment track geometry have all passed independent review and user acceptance; cross-browser/real-device checks, concurrency stress, and full re-import are untested. The remaining use cases in this document (§2–§5) remain complete product design and are not yet implemented.
+Implementation status as of 2026-11-19: §6 and §7 are implemented per the MVP contract; the whole-package import of the fixed package, direct services, stop details, and segment track geometry have all passed independent review and user acceptance; cross-browser/real-device checks, concurrency stress, and full re-import are untested. The remaining use cases in this document (§2–§5) remain complete product design and are not yet implemented.
