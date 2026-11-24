@@ -33,4 +33,11 @@ class ServiceDateTimesTest {
         assertEquals("2026-12-01T06:00:00+08:00", ServiceDateTimes.dateTime(LocalDate.of(2026, 11, 30), 30 * 3600));
         assertEquals(1, ServiceDateTimes.dayOffset(30 * 3600));
     }
+
+    @Test
+    void usesFixedBeijingStandardTimeOnFormerDaylightSavingTransitions() {
+        assertEquals("1991-04-14T06:14:00+08:00", ServiceDateTimes.dateTime(LocalDate.of(1991, 4, 14), 22_440));
+        assertEquals("1991-09-15T06:14:00+08:00", ServiceDateTimes.dateTime(LocalDate.of(1991, 9, 15), 22_440));
+        assertEquals("1991-04-14T02:06:00+08:00", ServiceDateTimes.dateTime(LocalDate.of(1991, 4, 13), 93_960));
+    }
 }

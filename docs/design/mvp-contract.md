@@ -45,7 +45,7 @@ UI 统一短标为“历史回放 · 参考日期/版本”；不得表述为当
 
 ## 3. MySQL 表与索引
 
-所有表 InnoDB / utf8mb4；标识使用 VARCHAR(128) COLLATE utf8mb4_bin，保留大小写和原值。下表 `D`=dataset_id BIGINT，所有业务 PK 前缀均为 D。状态使用有校验的字符串或等价枚举。时间戳存 UTC DATETIME(3)，HTTP 输出带 Z；车次发到时刻另按 Asia/Shanghai 求值。保留原始经纬度，DECIMAL(10,7)，不存转换后的 GCJ-02。
+所有表 InnoDB / utf8mb4；标识使用 VARCHAR(128) COLLATE utf8mb4_bin，保留大小写和原值。下表 `D`=dataset_id BIGINT，所有业务 PK 前缀均为 D。状态使用有校验的字符串或等价枚举。时间戳存 UTC DATETIME(3)，HTTP 输出带 Z。车次发到时刻按固定北京时间 `UTC+08:00` 求值。保留原始经纬度，DECIMAL(10,7)，不存转换后的 GCJ-02。
 
 | 表 | 字段（除 D 外） | 键与索引 |
 | --- | --- | --- |
@@ -66,7 +66,7 @@ UI 统一短标为“历史回放 · 参考日期/版本”；不得表述为当
 
 原始固定包中必填字段不得静默填空；空 shape_id 归一为 NULL。stop/trip/route 等 ID 与 service_id 的逻辑引用在激活前校验；本轮采用应用校验而不依赖跨大表级联删除。外键若实现，不能给允许缺失的 shape 关联加必存在约束。calendar_dates exception_type=1 增加、2 排除；本固定包全为 1，但查询不把缺记录当开行。坐标非有限数/越界、序列重复、非法日期/时刻、同 trip 站序时间倒退仍拒绝激活；同站发车早于到达仅适用§3.1的逐条限定例外，其余仍拒绝。无 shape 单独警告；站点名称重复不是失败。
 
-源时刻用非负累计秒表达，分钟/秒必须 0–59；不能经 LocalTime 截为一天。`referenceServiceDate` 当地零点 + 累计秒得到完整发到时间，输出 ISO 8601 `+08:00`；dayOffset=floor(seconds/86400)。
+源时刻用非负累计秒表达，分钟/秒必须 0–59。按固定北京时间 `UTC+08:00` 从 `referenceServiceDate` 零点累加得到完整发到时间，输出 24 小时制 ISO 8601，`dayOffset=floor(seconds/86400)`。
 
 ### 3.1 任务15裁决：已知源异常保真与限定激活
 
