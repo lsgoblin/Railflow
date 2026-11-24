@@ -11,6 +11,10 @@ import org.apache.ibatis.annotations.Select;
 public interface StationMapper {
 
     @Select("SELECT stop_id, stop_name, stop_lat, stop_lon, location_type FROM gtfs_stop "
+            + "WHERE dataset_id = #{datasetId} ORDER BY stop_id ASC")
+    List<StationRow> findAll(@Param("datasetId") long datasetId);
+
+    @Select("SELECT stop_id, stop_name, stop_lat, stop_lon, location_type FROM gtfs_stop "
             + "WHERE dataset_id = #{datasetId} AND ("
             + "stop_name LIKE CONCAT('%', #{q}, '%') ESCAPE '!' OR stop_id LIKE CONCAT('%', #{q}, '%') ESCAPE '!') "
             + "ORDER BY stop_id ASC LIMIT #{limit} OFFSET #{offset}")

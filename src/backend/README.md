@@ -2,7 +2,7 @@
 
 Java 17 / Spring Boot 3.3.5 / MyBatis 3.0.4 / MySQL 8.4.13。实现 [MVP 数据与接口契约（MVP-C1.2）](../../docs/design/mvp-contract.md) 的固定 GTFS 整包导入与只读查询/几何服务，对应任务 [20261118-07](../../tasks/20261118-tasks.md#20261118-07) 与 [20261118-08](../../tasks/20261118-tasks.md#20261118-08)。
 
-本轮范围只有：整包导入（版本化、校验后激活）、站点检索、同车次直达查询、停站详情、区间几何、导入记录。不含账号、保存、AI、换乘、票价、订单或管理后台。
+后端提供固定包整包导入、站点与直达查询、停站详情、区间几何和导入记录。`/api/replay` 另提供全量城市目录、有序城市历史规划和同站换乘。
 
 ## 1. 目录
 
@@ -49,7 +49,7 @@ $mvn='D:\test\RailFlow\output\tools\apache-maven-3.9.9\bin\mvn.cmd'
 & $mvn -o -Dmaven.repo.local=D:/test/RailFlow/output/.m2/repository `
        -f D:/test/RailFlow/src/backend/pom.xml package
 # 产物：src/backend/target/railflow-backend.jar（约 25.5 MB）
-& $mvn ... test      # 44 项单元测试：几何 9、累计时刻 4、CSV/字段 8、schema 结构校验 15、已知源异常 8
+& $mvn ... test      # 含城市行程排序、同站换乘及源异常回归
 ```
 
 离线构建依赖 `output/.m2/repository` 中已有依赖；`mvn clean` 需要的插件未缓存，删产物请直接删 `target/` 下文件。
@@ -77,6 +77,21 @@ $java='C:\Program Files\Java\jdk-17\bin\java.exe'; $jar='D:\test\RailFlow\src\ba
 ```
 
 `web` profile 把 `src/frontend` 挂到同源静态路径（`/` 转发到 `index.html`），页面与 `/api/mvp/**` 同源，保持 ES Modules 无构建。`schema`/`import` 仍为非 Web 进程，不挂载静态文件。
+
+`/api/replay/cities`、`/api/replay/cities/{cityId}`、`/api/replay/locations` 查询全量目录，`POST /api/replay/plans` 生成历史行程。目录种子随 JAR 发布，首次查询与已激活 GTFS 的全部站码对账，初始化完成后按数据集缓存。规划首次调用加载同一数据集的停站和开行日历，复用现有 schema 和导入产物。参数、示例和归属来源见 [城市行程历史回放](../../docs/design/city-replay.md)。
+
+规划按可衔接候选的全程换乘数推荐，分段直达可续程时仍比较可能减少全程换乘数的方案。参考和回放时刻统一使用固定北京时间 `UTC+08:00` 和 24 小时制。站内到发或相邻站时序矛盾的区间不用于乘车和换乘，既有 MVP 停站详情保留固定包原值。更新城市归属种子或规划代码后，重新构建并启动 Web 进程即可加载。
+
+```powershell
+$plan = @{
+  datasetVersion = 'gtfs-20261116-085531'
+  departureDate = '2026-11-23'
+  referenceDate = '2026-11-16'
+  minimumTransferMinutes = 30
+  nodes = @(@{cityId='110000'}, @{cityId='320100'}, @{cityId='310000'})
+} | ConvertTo-Json -Depth 4
+Invoke-RestMethod http://127.0.0.1:8080/api/replay/plans -Method Post -ContentType 'application/json' -Body $plan
+```
 
 stdout 只有一行 JSON 摘要，日志在 stderr。退出码：`0` 成功/NOOP，`2` 输入或包校验失败，`3` 锁冲突，`4` 数据库/结构失败，`5` 其他运行失败。错误码另有 `PACKAGE_HASH_MISMATCH`、`PACKAGE_CONTENT_INVALID`、`DATASET_HASH_CONFLICT`、`SCHEMA_NOT_READY`、`IMPORT_IN_PROGRESS`、`IMPORT_INTERRUPTED`、`DATABASE_UNAVAILABLE`。
 
