@@ -80,6 +80,8 @@ $java='C:\Program Files\Java\jdk-17\bin\java.exe'; $jar='D:\test\RailFlow\src\ba
 
 `/api/replay/cities`、`/api/replay/cities/{cityId}`、`/api/replay/locations` 查询全量目录，`POST /api/replay/plans` 生成历史行程。目录种子随 JAR 发布，首次查询与已激活 GTFS 的全部站码对账，初始化完成后按数据集缓存。规划首次调用加载同一数据集的停站和开行日历，复用现有 schema 和导入产物。参数、示例和归属来源见 [城市行程历史回放](../../docs/design/city-replay.md)。
 
+普通地点查询为 `GET /api/places?q=地点名`。启动 Web 进程前在环境中设置 `AMAP_WEB_SERVICE_KEY`，使用有 v3 关键字搜索权限的高德 Web 服务 Key。已有底图用的 JS API Key 配置与此独立。根据账户配置核对服务端出口 IP 白名单和调用额度。缺少 Web 服务 Key 时返回 `PLACE_SEARCH_NOT_CONFIGURED`，本地城市、站点和历史行程仍可用。字段与错误见[普通地点查询接口](../../docs/design/design-spec.md#普通地点查询接口)。
+
 规划按可衔接候选的全程换乘数推荐，分段直达可续程时仍比较可能减少全程换乘数的方案。参考和回放时刻统一使用固定北京时间 `UTC+08:00` 和 24 小时制。站内到发或相邻站时序矛盾的区间不用于乘车和换乘，既有 MVP 停站详情保留固定包原值。更新城市归属种子或规划代码后，重新构建并启动 Web 进程即可加载。
 
 ```powershell

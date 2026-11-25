@@ -26,6 +26,13 @@ public enum ErrorCode {
     DATASET_NOT_READY(HttpStatus.SERVICE_UNAVAILABLE, "暂无可用的已激活数据版本"),
     DATABASE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "数据库暂不可用"),
 
+    PLACE_SEARCH_NOT_CONFIGURED(HttpStatus.SERVICE_UNAVAILABLE, "普通地点搜索尚未配置"),
+    PLACE_SEARCH_PERMISSION_DENIED(HttpStatus.SERVICE_UNAVAILABLE, "高德地点查询权限不足"),
+    PLACE_SEARCH_QUOTA_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "高德地点查询额度已用尽或受限"),
+    PLACE_SEARCH_RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS, "地点搜索过于频繁，请稍后重试"),
+    PLACE_SEARCH_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "高德地点查询超时，请重试"),
+    PLACE_SEARCH_UNAVAILABLE(HttpStatus.BAD_GATEWAY, "高德地点搜索暂不可用"),
+
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "服务内部错误");
 
     private final HttpStatus httpStatus;
