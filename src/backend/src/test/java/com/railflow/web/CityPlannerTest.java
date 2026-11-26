@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.railflow.web.mapper.TimetableMapper.ScheduledStop;
 import com.railflow.web.mapper.TimetableMapper.ServiceDay;
+import java.io.StringReader;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -143,7 +144,7 @@ class CityPlannerTest {
     }
 
     @Test
-    void canUseMoreThanOneTransferAndNeverTransfersAcrossDifferentStops() {
+    void canUseMoreThanOneTransferAndSkipsCrossStationWithoutEvidence() {
         train("first", DAY, "A", 100, "X", 200);
         train("different-station", DAY, "X2", 240, "B", 400);
         train("second", DAY, "X", 240, "Y", 400);
@@ -154,10 +155,78 @@ class CityPlannerTest {
     }
 
     @Test
+    void checksDirectedCrossStationEvidenceAndCallerBufferAcrossMidnight() throws Exception {
+        train("night", DAY, "A", 1430, "X", 1450);
+        train("next-day", DAY.plusDays(1), "Y", 60, "B", 100);
+        train("reverse-first", DAY, "D", 300, "Y", 400);
+        train("reverse-second", DAY, "X", 470, "E", 500);
+        var eligible = Map.of("X", new CityCatalog.Station("hub", null, "", "X"),
+                "Y", new CityCatalog.Station("hub", null, "", "Y"));
+        var evidence = CrossStationTransfers.read(new StringReader("""
+                from_stop_id,to_stop_id,transfer_type,min_transfer_time
+                X,Y,2,1200
+                """), eligible);
+        var schedule = RailTimetable.index(1, stops, calendar);
+        var visits = List.of(visit(0, "A"), visit(0, "B"));
+        var search = new CityPlanner.Search(schedule, visits, DAY.plusDays(1), 1800, Map.of(), evidence);
+        var result = search.from(0, DAY);
+        assertNull(result.reason());
+        assertEquals(List.of("night", "next-day"), trains(result, 0));
+        assertEquals(1, result.transfers());
+        var rides = result.paths().get(0).rides();
+        assertEquals(new CityPlanner.Connection("X", "Y", true, 1200, 1800, 3000, "transfers.txt"),
+                search.connection(rides.get(0), rides.get(1)));
+        assertEquals("NO_ROUTE", new CityPlanner.Search(schedule, visits, DAY.plusDays(1), 1860,
+                Map.of(), evidence).from(0, DAY).reason());
+        assertEquals("NO_ROUTE", new CityPlanner.Search(schedule, visits, DAY.plusDays(1), 1800,
+                Map.of(), Map.of()).from(0, DAY).reason());
+        assertEquals("NO_ROUTE", new CityPlanner.Search(schedule, List.of(visit(0, "D"), visit(0, "E")),
+                DAY.plusDays(1), 1800, Map.of(), evidence).from(0, DAY).reason());
+    }
+
+    @Test
+    void excludesScopedAndCrossCityEvidence() throws Exception {
+        var stations = Map.of("X", new CityCatalog.Station("hub", null, "", "X"),
+                "Y", new CityCatalog.Station("hub", null, "", "Y"),
+                "Z", new CityCatalog.Station("outside", null, "", "Z"));
+        var evidence = CrossStationTransfers.read(new StringReader("""
+                from_stop_id,to_stop_id,transfer_type,min_transfer_time,from_trip_id
+                X,Y,2,1200,
+                X,Y,3,,blocked
+                Y,Z,2,1200,
+                Z,X,2,1200,
+                """), stations);
+        assertEquals(Map.of("X", Map.of()), evidence);
+    }
+
+    @Test
+    void crossStationEvidenceAppliesOnlyToTheActualArrivalAndDepartureCodes() throws Exception {
+        train("earlier-alias", DAY, "A", 590, "X-ALIAS", 650);
+        train("documented-arrival", DAY, "A", 600, "X", 660);
+        train("documented-departure", DAY, "Y", 710, "B", 800);
+        train("departure-alias", DAY, "Y-ALIAS", 720, "C", 810);
+        train("alias-only-arrival", DAY, "D", 600, "X-ALIAS", 660);
+        var schedule = RailTimetable.index(1, stops, calendar);
+        var groups = Map.of("X", List.of("X", "X-ALIAS"), "Y", List.of("Y", "Y-ALIAS"));
+        var evidence = CrossStationTransfers.read(new StringReader("""
+                from_stop_id,to_stop_id,transfer_type,min_transfer_time
+                X,Y,2,1200
+                """), Map.of("X", new CityCatalog.Station("hub", null, "", "X"),
+                "Y", new CityCatalog.Station("hub", null, "", "Y")));
+        var documented = new CityPlanner.Search(schedule, List.of(visit(0, "A"), visit(0, "B")),
+                DAY, 1800, groups, evidence).from(0, DAY);
+        assertEquals(List.of("documented-arrival", "documented-departure"), trains(documented, 0));
+        assertEquals("NO_ROUTE", new CityPlanner.Search(schedule, List.of(visit(0, "A"), visit(0, "C")),
+                DAY, 1800, groups, evidence).from(0, DAY).reason());
+        assertEquals("NO_ROUTE", new CityPlanner.Search(schedule, List.of(visit(0, "D"), visit(0, "B")),
+                DAY, 1800, groups, evidence).from(0, DAY).reason());
+    }
+
+    @Test
     void reportsOutOfCoverageAtContinuationAndRetainsSuccessfulPrefix() {
         train("first", DAY, "A", 100, "X", 200);
         var result = new CityPlanner.Search(RailTimetable.index(1, stops, calendar),
-                List.of(visit(0, "A"), visit(1, "X"), visit(0, "B")), DAY, 1800, Map.of()).from(0, DAY);
+                List.of(visit(0, "A"), visit(1, "X"), visit(0, "B")), DAY, 1800, Map.of(), Map.of()).from(0, DAY);
         assertEquals("DATE_OUTSIDE_COVERAGE", result.reason());
         assertEquals(1, result.failureIndex());
         assertEquals(List.of("first"), trains(result, 0));
@@ -169,14 +238,14 @@ class CityPlannerTest {
         train("second", DAY, "X-ALIAS", 240, "B", 400);
         var result = new CityPlanner.Search(RailTimetable.index(1, stops, calendar),
                 List.of(visit(0, "A"), visit(0, "B")), DAY, 1800,
-                Map.of("X", List.of("X", "X-ALIAS"))).from(0, DAY);
+                Map.of("X", List.of("X", "X-ALIAS")), Map.of()).from(0, DAY);
         assertEquals(List.of("first", "second"), trains(result, 0));
         assertEquals("X-ALIAS", result.paths().get(0).rides().get(1).boarding().stop().stopId);
     }
 
     private CityPlanner.Attempt search(int transferMinutes, LocalDate date, CityPlanner.Visit... visits) {
         return new CityPlanner.Search(RailTimetable.index(1, stops, calendar), List.of(visits),
-                DAY.plusDays(5), transferMinutes * 60L, Map.of()).from(0, date);
+                DAY.plusDays(5), transferMinutes * 60L, Map.of(), Map.of()).from(0, date);
     }
 
     private static CityPlanner.Visit visit(int stayDays, String... stations) {

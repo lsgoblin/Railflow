@@ -47,7 +47,8 @@ public class CityPlanner {
             throw invalid("departureDate 年份超出范围");
         }
         int minimumTransfer = positiveInteger(request.minimumTransferMinutes(), "minimumTransferMinutes");
-        DatasetRow dataset = datasets.resolve(version).row();
+        var resolved = datasets.resolve(version);
+        DatasetRow dataset = resolved.row();
         datasets.requireCoverage(dataset, reference);
         var directory = catalog.load(dataset);
         var nodes = new ArrayList<Visit>();
@@ -72,22 +73,29 @@ public class CityPlanner {
         }
         long offset = ChronoUnit.DAYS.between(reference, departure);
         var search = new Search(timetable.load(dataset.id), nodes, dataset.coverageEnd,
-                minimumTransfer * 60L, directory.stopCodesByGroup());
+                minimumTransfer * 60L, directory.stopCodesByGroup(), CrossStationTransfers.load(resolved, directory));
         Attempt attempt = search.from(0, reference);
         List<Leg> legs = new ArrayList<>();
         for (int i = 0; i < attempt.paths().size(); i++) {
             Path path = attempt.paths().get(i);
             List<Train> trains = new ArrayList<>();
-            for (Ride ride : path.rides()) {
+            var rides = path.rides();
+            var connections = new ArrayList<Connection>();
+            for (int j = 0; j < rides.size(); j++) {
+                Ride ride = rides.get(j);
                 LocalDate serviceDay = ride.boarding().run().serviceDate();
                 LocalDate displayDay = serviceDay.plusDays(offset);
-                trains.add(new Train(serviceDay, directory.stations().get(ride.boarding().stop().stopId).cityId(),
-                        directory.stations().get(ride.to().stopId).cityId(), ride.summary(),
+                var from = directory.stations().get(ride.boarding().stop().stopId);
+                var to = directory.stations().get(ride.to().stopId);
+                trains.add(new Train(serviceDay, from.cityId(), to.cityId(), ride.summary(),
                         ServiceDateTimes.dateTime(displayDay, ride.boarding().stop().departureSeconds),
-                        ServiceDateTimes.dateTime(displayDay, ride.to().arrivalSeconds)));
+                        ServiceDateTimes.dateTime(displayDay, ride.to().arrivalSeconds), from.station(), to.station()));
+                if (j > 0) {
+                    connections.add(search.connection(rides.get(j - 1), ride));
+                }
             }
             legs.add(new Leg(i, nodes.get(i).node().cityId(), nodes.get(i + 1).node().cityId(),
-                    trains.size() - 1, List.copyOf(trains)));
+                    connections.size(), List.copyOf(trains), List.copyOf(connections)));
         }
         return new Plan(version, departure, reference, offset, nodes.stream().map(Visit::node).toList(),
                 List.copyOf(legs), attempt.failureIndex(), attempt.reason());
@@ -128,16 +136,18 @@ public class CityPlanner {
         private final LocalDate coverageEnd;
         private final long transferSeconds;
         private final Map<String, List<String>> codesByGroup;
+        private final Map<String, Map<String, Integer>> crossStationSeconds;
         private final Map<String, String> groupsByCode = new HashMap<>();
         private final Map<Step, Attempt> memo = new HashMap<>();
 
         Search(RailTimetable.Snapshot schedule, List<Visit> nodes, LocalDate coverageEnd, long transferSeconds,
-               Map<String, List<String>> codesByGroup) {
+               Map<String, List<String>> codesByGroup, Map<String, Map<String, Integer>> crossStationSeconds) {
             this.schedule = schedule;
             this.nodes = nodes;
             this.coverageEnd = coverageEnd;
             this.transferSeconds = transferSeconds;
             this.codesByGroup = codesByGroup;
+            this.crossStationSeconds = crossStationSeconds;
             codesByGroup.forEach((group, codes) -> {
                 if (codes.size() > 1) {
                     codes.forEach(code -> groupsByCode.put(code, group));
@@ -202,15 +212,21 @@ public class CityPlanner {
             for (int transfers = 1; (best.reason() != null || transfers < best.transfers())
                     && frontiers.stream().anyMatch(f -> !f.next.isEmpty()); transfers++) {
                 for (Frontier frontier : frontiers) {
-                    Map<String, Trace> current = frontier.next;
+                    Map<TransferPoint, Trace> current = frontier.next;
                     frontier.next = new LinkedHashMap<>();
                     Map<Destination, Path> options = new LinkedHashMap<>();
                     for (var entry : current.entrySet()) {
                         Trace previous = entry.getValue();
-                        String group = entry.getKey();
-                        for (String stop : codesByGroup.getOrDefault(group, List.of(group))) {
-                            scan(stop, previous, previous.ride().arrival() + transferSeconds,
-                                    lastArrival + 1, destination, options, frontier);
+                        TransferPoint point = entry.getKey();
+                        long earliest = previous.ride().arrival() + transferSeconds;
+                        for (String stop : codesByGroup.getOrDefault(point.group(), List.of(point.group()))) {
+                            scan(stop, previous, earliest, destination.lastArrival() + 1, destination, options, frontier);
+                        }
+                        if (point.crossStationArrival() != null) {
+                            for (var cross : crossStationSeconds.get(point.crossStationArrival()).entrySet()) {
+                                scan(cross.getKey(), previous, earliest + cross.getValue(),
+                                        destination.lastArrival() + 1, destination, options, frontier);
+                            }
                         }
                     }
                     best = continueWith(index, options, best, transfers);
@@ -220,6 +236,17 @@ public class CityPlanner {
                 }
             }
             return best;
+        }
+
+        Connection connection(Ride previous, Ride next) {
+            String arrival = previous.to().stopId;
+            String departure = next.boarding().stop().stopId;
+            String fromGroup = groupOf(arrival);
+            String toGroup = groupOf(departure);
+            boolean cross = !fromGroup.equals(toGroup);
+            int seconds = cross ? crossStationSeconds.get(arrival).get(departure) : 0;
+            return new Connection(arrival, departure, cross, seconds, transferSeconds,
+                    next.boarding().departure() - previous.arrival(), cross ? "transfers.txt" : null);
         }
 
         private void scan(String from, Trace previous, long start, long end, Query query,
@@ -259,11 +286,14 @@ public class CityPlanner {
                             }
                         }
                     } else if (frontier != null) {
-                        String group = groupOf(alight.stopId);
-                        if (arrival < frontier.earliest.getOrDefault(group, Long.MAX_VALUE)) {
-                            frontier.earliest.put(group, arrival);
+                        // Earlier arrivals at another group member may have different cross-station edges.
+                        String crossStationArrival = crossStationSeconds.getOrDefault(alight.stopId, Map.of()).isEmpty()
+                                ? null : alight.stopId;
+                        var point = new TransferPoint(groupOf(alight.stopId), crossStationArrival);
+                        if (arrival < frontier.earliest.getOrDefault(point, Long.MAX_VALUE)) {
+                            frontier.earliest.put(point, arrival);
                             long departure = previous == null ? board.departure() : previous.firstDeparture();
-                            frontier.next.put(group, new Trace(previous, new Ride(board, j, arrival), departure));
+                            frontier.next.put(point, new Trace(previous, new Ride(board, j, arrival), departure));
                         }
                     }
                 }
@@ -298,10 +328,13 @@ public class CityPlanner {
     private record Query(Map<String, Integer> targets, long lastArrival) {
     }
 
+    private record TransferPoint(String group, String crossStationArrival) {
+    }
+
     private static class Frontier {
         private final String origin;
-        private final Map<String, Long> earliest = new HashMap<>();
-        private Map<String, Trace> next = new LinkedHashMap<>();
+        private final Map<TransferPoint, Long> earliest = new HashMap<>();
+        private Map<TransferPoint, Trace> next = new LinkedHashMap<>();
 
         Frontier(String origin) {
             this.origin = origin;
@@ -359,10 +392,16 @@ public class CityPlanner {
     }
 
     public record Train(LocalDate referenceServiceDate, String fromCityId, String toCityId, MvpDtos.TripSummary trip,
-                        String departureDateTime, String arrivalDateTime) {
+                        String departureDateTime, String arrivalDateTime, MvpDtos.Station fromStation,
+                        MvpDtos.Station toStation) {
     }
 
-    public record Leg(int index, String fromCityId, String toCityId, int transfers, List<Train> trains) {
+    public record Connection(String arrivalStopId, String departureStopId, boolean crossStation,
+                             int transferSeconds, long bufferSeconds, long availableSeconds, String source) {
+    }
+
+    public record Leg(int index, String fromCityId, String toCityId, int transfers, List<Train> trains,
+                      List<Connection> connections) {
     }
 
     public record Plan(String datasetVersion, LocalDate departureDate, LocalDate referenceDate, long dateOffsetDays,
