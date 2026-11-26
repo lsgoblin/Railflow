@@ -1,6 +1,5 @@
 package com.railflow.web;
 
-import java.util.regex.Pattern;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
@@ -12,8 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("web")
 public class PlaceSearchController {
 
-    private static final Pattern OUTER_WHITESPACE = Pattern.compile(
-            "\\A\\s++|(?<!\\s)\\s++\\z", Pattern.UNICODE_CHARACTER_CLASS);
     private final AmapPlaceSearch search;
 
     public PlaceSearchController(AmapPlaceSearch search) {
@@ -22,7 +19,7 @@ public class PlaceSearchController {
 
     @GetMapping("/api/places")
     public ResponseEntity<AmapPlaceSearch.Results> places(@RequestParam(name = "q", required = false) String query) {
-        String stripped = query == null ? null : OUTER_WHITESPACE.matcher(query).replaceAll("");
+        String stripped = Params.trimUnicodeWhitespace(query);
         var results = search.search(Params.requireText(stripped, "q", 64));
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(results);
     }

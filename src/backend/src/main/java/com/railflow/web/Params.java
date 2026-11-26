@@ -4,11 +4,18 @@ import com.railflow.common.ApiException;
 import com.railflow.common.ErrorCode;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.regex.Pattern;
 
 /** Request parameter validation with the contract's 422 VALIDATION_FAILED semantics. */
 public final class Params {
+    private static final Pattern OUTER_WHITESPACE = Pattern.compile(
+            "\\A\\s++|(?<!\\s)\\s++\\z", Pattern.UNICODE_CHARACTER_CLASS);
 
     private Params() {
+    }
+
+    static String trimUnicodeWhitespace(String value) {
+        return value == null ? null : OUTER_WHITESPACE.matcher(value).replaceAll("");
     }
 
     public static String requireText(String value, String name, int maxLength) {

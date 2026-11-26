@@ -33,6 +33,13 @@ public enum ErrorCode {
     PLACE_SEARCH_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "高德地点查询超时，请重试"),
     PLACE_SEARCH_UNAVAILABLE(HttpStatus.BAD_GATEWAY, "高德地点搜索暂不可用"),
 
+    AI_NOT_CONFIGURED(HttpStatus.SERVICE_UNAVAILABLE, "AI 助手尚未配置"),
+    AI_LOCAL_ONLY(HttpStatus.FORBIDDEN, "AI 助手当前仅供本机访问"),
+    AI_BUSY(HttpStatus.TOO_MANY_REQUESTS, "AI 助手正在处理其他请求，请稍后重试"),
+    AI_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "AI 请求超时，请重试"),
+    AI_INVALID_RESPONSE(HttpStatus.UNPROCESSABLE_ENTITY, "AI 未返回完整有效的行程条件，请重试"),
+    AI_UNAVAILABLE(HttpStatus.BAD_GATEWAY, "AI 服务暂不可用，请稍后重试"),
+
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "服务内部错误");
 
     private final HttpStatus httpStatus;
