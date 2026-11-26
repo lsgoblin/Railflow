@@ -8,3 +8,4 @@
 *.pdf binary
 *.png binary
 *.zip binary
+src/backend/src/main/resources/gtfs/gtfs-20261116-085531-time-anomalies.json text eol=lf
