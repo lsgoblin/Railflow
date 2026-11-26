@@ -41,6 +41,12 @@ public class ReplayController {
         return new City(dataset.versionName, catalog.load(dataset).requireCity(id));
     }
 
+    @GetMapping("/stations")
+    public Stations stations(@RequestParam(name = "datasetVersion", required = false) String version) {
+        var dataset = datasets.resolve(version).row();
+        return new Stations(dataset.versionName, List.copyOf(catalog.load(dataset).stations().values()));
+    }
+
     @GetMapping("/locations")
     public Locations locations(@RequestParam(name = "datasetVersion", required = false) String version,
                                @RequestParam(name = "q", required = false) String query,
@@ -66,6 +72,9 @@ public class ReplayController {
     }
 
     public record City(String datasetVersion, CityCatalog.CityDetail item) {
+    }
+
+    public record Stations(String datasetVersion, List<CityCatalog.Station> items) {
     }
 
     public record Locations(String datasetVersion, List<CityCatalog.Location> items, int total, int offset,

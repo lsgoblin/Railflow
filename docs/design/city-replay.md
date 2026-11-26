@@ -48,6 +48,7 @@
 | --- | --- | --- |
 | `GET /cities` | `datasetVersion` | `datasetVersion`、`stationCount` 和 `items[]`。每个城市含 `cityId`、`name`、`administration`、WGS84 经纬度、`anchorStopId`、`stationCount`（GTFS 码数）和 `stationGroupCount`。 |
 | `GET /cities/{cityId}` | `datasetVersion` | `item.city` 和 `item.stations[]`。车站按 `stop_id` 升序，每项含 `cityId`、`membershipSource`、`stationGroupId` 和原 MVP `station`。 |
+| `GET /stations` | `datasetVersion` | `datasetVersion` 与 `items[]`。按 `stop_id` 升序返回同一目录内的全部站码、所属城市与 WGS84 坐标，条目结构同 `GET /cities/{cityId}` 的 `item.stations[]`。用于高德铁路站热点匹配及等距投影的站点标记。 |
 | `GET /locations` | `datasetVersion`、`q`，可选 `offset`、`limit` | 按城市名、站名、站码字面包含检索。`items[]` 先列 `CITY` 再列 `STATION`，站点项携带所属城市，分页返回 `total`、`offset`、`limit` 和 `hasMore`。 |
 | `POST /plans` | JSON 对象，见下文 | 有序 `nodes[]`、各段 `legs[]`、`dateOffsetDays`、可空 `failedLegIndex` 和 `emptyReason`。 |
 
