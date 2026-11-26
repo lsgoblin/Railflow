@@ -61,6 +61,18 @@ function wgs84ToGcj02(lng, lat) {
   return [lng + dLng, lat + dLat];
 }
 
+export function gcj02ToWgs84(lng, lat) {
+  // 将高德地点统一到覆盖物使用的 WGS84，保留搜索结果里的原始坐标。
+  let longitude = lng;
+  let latitude = lat;
+  for (let step = 0; step < 3; step += 1) {
+    const [shiftedLng, shiftedLat] = wgs84ToGcj02(longitude, latitude);
+    longitude += lng - shiftedLng;
+    latitude += lat - shiftedLat;
+  }
+  return [longitude, latitude];
+}
+
 /* ---------- 覆盖物模型：与具体地图引擎无关 ---------- */
 
 export function buildOverlayView({ plan, results, dataset, places }) {
@@ -198,25 +210,102 @@ function createOverlay(container) {
   return wrap;
 }
 
-function drawOverlay({ svg, view, project, width, height, callbacks }) {
+function bindMapButton(group, activate) {
+  let start;
+  let moved = false;
+  const trackPointer = (event) => {
+    if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 8) moved = true;
+  };
+  group.addEventListener("pointerdown", (event) => {
+    start = { x: event.clientX, y: event.clientY };
+    moved = false;
+  });
+  group.addEventListener("pointermove", trackPointer);
+  group.addEventListener("pointerleave", trackPointer);
+  group.addEventListener("pointercancel", () => { moved = true; });
+  group.addEventListener("click", (event) => {
+    event.stopPropagation();
+    trackPointer(event);
+    if (!event.detail || !moved) activate(!event.detail);
+    start = undefined;
+  });
+  group.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    if (!event.repeat) activate(true);
+  });
+}
+
+function drawOverlay({ svg, view, project, width, height, callbacks, showDirectory, showStations }) {
   while (svg.firstChild) svg.removeChild(svg.firstChild);
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.setAttribute("width", String(width));
   svg.setAttribute("height", String(height));
 
   const groupAlt = svgEl("g");
+  const groupCities = svgEl("g");
   const groupMain = svgEl("g");
   const groupArrows = svgEl("g", { "aria-hidden": "true" });
   const groupHits = svgEl("g");
+  const groupStations = svgEl("g");
   const groupMarkers = svgEl("g");
   const groupLabels = svgEl("g");
-  svg.append(groupAlt, groupMain, groupArrows, groupHits, groupMarkers, groupLabels);
+  svg.append(groupCities, groupAlt, groupMain, groupArrows, groupHits, groupStations, groupMarkers, groupLabels);
 
   const projected = (coord) => {
     const point = project(coord[0], coord[1]);
     if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return null;
     return point;
   };
+
+  const isVisible = (point) => point && point.x >= 0 && point.x <= width && point.y >= 0 && point.y <= height;
+  const cityPositions = [];
+  const positionsWithStations = showStations && view.catalogStations?.length;
+  for (const city of (showDirectory ? view.cities : null) ?? []) {
+    const point = projected([city.longitude, city.latitude]);
+    if (!isVisible(point)) continue;
+    if (cityPositions.some((other) => Math.abs(other.x - point.x) < 54 && Math.abs(other.y - point.y) < 30)) continue;
+    cityPositions.push(point);
+    const group = svgEl("g", { class: "overlay-city", transform: `translate(${point.x} ${point.y})`,
+      role: "button", tabindex: 0, "aria-label": `添加${city.name}`, "data-city-id": city.cityId });
+    const title = svgEl("title");
+    title.textContent = city.name;
+    const name = svgEl("text", { x: 0, y: positionsWithStations ? -25 : -9, "text-anchor": "middle" });
+    name.textContent = city.name;
+    group.append(title, svgEl("circle", { r: 13, fill: "transparent" }), svgEl("circle", { r: 4 }), name);
+    bindMapButton(group, (keyboard) => callbacks.onCityClick?.(city.cityId, keyboard));
+    groupCities.append(group);
+  }
+
+  if (positionsWithStations) {
+    const displayedStops = new Set(view.markers?.map(({ stopId }) => stopId));
+    const pins = [];
+    for (const item of view.catalogStations) {
+      const { stopId, longitude, latitude } = item.station;
+      if (displayedStops.has(stopId)) continue;
+      const point = projected([longitude, latitude]);
+      if (!isVisible(point)) continue;
+      const nearby = pins.find((pin) => Math.hypot(pin.point.x - point.x, pin.point.y - point.y) < 44);
+      if (nearby) nearby.items.push(item);
+      else pins.push({ point, items: [item] });
+    }
+    for (const { point, items } of pins) {
+      const { stopId, stopName } = items[0].station;
+      const multiple = items.length > 1;
+      const name = multiple ? `铁路站（${items.length}）` : stopName;
+      const action = multiple ? `选择${items.length}个相邻铁路站` : `添加铁路站${stopName}（${stopId}）`;
+      const group = svgEl("g", { class: "overlay-station", transform: `translate(${point.x} ${point.y})`,
+        role: "button", tabindex: 0, "aria-label": action, "data-stop-id": multiple ? null : stopId });
+      const title = svgEl("title");
+      title.textContent = action;
+      const label = svgEl("text", { x: 0, y: 27, "text-anchor": "middle" });
+      label.textContent = name;
+      group.append(title, svgEl("circle", { r: 22, fill: "transparent" }),
+        svgEl("circle", { r: multiple ? 7 : 5.5 }), label);
+      bindMapButton(group, (keyboard) => callbacks.onStationClick?.(items, keyboard));
+      groupStations.append(group);
+    }
+  }
 
   const drawLayerLine = (group, points, style, dash, className) => {
     const path = svgEl("path", {
@@ -352,11 +441,15 @@ function drawOverlay({ svg, view, project, width, height, callbacks }) {
     const point = projected(marker.coord);
     if (!point) continue;
     const group = svgEl("g", { class: "overlay-marker", transform: `translate(${point.x.toFixed(1)} ${point.y.toFixed(1)})` });
-    group.dataset.nodeId = marker.nodeId;
-    group.setAttribute("tabindex", "-1");
-    group.addEventListener("click", (event) => {
-      event.stopPropagation();
-      callbacks.onMarkerClick?.(marker.nodeId);
+    if (marker.nodeId !== undefined) group.dataset.nodeId = marker.nodeId;
+    if (marker.nodeId !== undefined || marker.trainKey) {
+      group.setAttribute("tabindex", "0");
+      group.setAttribute("role", "button");
+      group.setAttribute("aria-label", `查看${marker.stationName ?? marker.name ?? marker.cityName}`);
+    }
+    bindMapButton(group, () => {
+      if (marker.trainKey) callbacks.onLineClick?.(marker.trainKey);
+      else callbacks.onMarkerClick?.(marker.nodeId);
     });
 
     if (marker.kind === "start" || marker.kind === "end") {
@@ -398,6 +491,16 @@ function drawOverlay({ svg, view, project, width, height, callbacks }) {
     group.append(svgEl("circle", { r: "5.5", fill: "#ffffff", stroke: "#17212b", "stroke-width": "2", class: "map-station-dot" }));
     groupMarkers.append(group);
     label(point.x, point.y + 15, marker.name, { fontSize: 11, weight: "400", textClass: "map-label map-label--muted" });
+  }
+
+  const placePoint = view.place && projected(view.place.coord);
+  if (isVisible(placePoint)) {
+    const group = svgEl("g", { class: "overlay-place", transform: `translate(${placePoint.x} ${placePoint.y})`, "aria-hidden": "true" });
+    group.append(
+      svgEl("path", { d: "M0 0 C-3-5-11-11-11-18 A11 11 0 0 1 11-18 C11-11 3-5 0 0Z" }),
+      svgEl("circle", { cy: "-18", r: "3.5" }));
+    groupMarkers.append(group);
+    label(placePoint.x, placePoint.y - 38, view.place.name, { fontSize: 12, weight: "600" });
   }
 }
 
@@ -468,7 +571,7 @@ function createOfflineAdapter({ container, callbacks }) {
       drawOverlay({ svg, view: { markers: [], lines: [], gaps: [] }, project, width, height, callbacks });
       return;
     }
-    drawOverlay({ svg, view: lastView, project, width, height, callbacks });
+    drawOverlay({ svg, view: lastView, project, width, height, callbacks, showDirectory: true, showStations: scale >= 160 });
   }
 
   function fitToBounds(points, padding = 80) {
@@ -516,7 +619,7 @@ function createOfflineAdapter({ container, callbacks }) {
   }
 
   const onPointerDown = (event) => {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || event.target.closest(".overlay-city, .overlay-station, .overlay-marker, .overlay-hit")) return;
     dragging = { x: event.clientX, y: event.clientY, center: [...center] };
     container.classList.add("dragging");
     container.setPointerCapture?.(event.pointerId);
@@ -561,8 +664,8 @@ function createOfflineAdapter({ container, callbacks }) {
       lastView = view;
       redraw();
     },
-    fit(padding) {
-      fitToBounds(flattenBounds(lastView ?? { markers: [], lines: [], gaps: [] }), padding ?? 90);
+    fit(padding, points = flattenBounds(lastView ?? { markers: [], lines: [], gaps: [] })) {
+      fitToBounds(points, padding ?? 90);
     },
     fitCountry() {
       fitChina(60);
@@ -629,6 +732,12 @@ function createAmapAdapter({ container, config, callbacks, simulateFailure }) {
   let pendingFit = null;
   let readyTimer = 0;
   let adapterRef = null;
+  const pendingHotspots = new Set();
+
+  function cancelHotspots() {
+    for (const timer of pendingHotspots) window.clearTimeout(timer);
+    pendingHotspots.clear();
+  }
 
   function markReady() {
     if (mapReady) return;
@@ -644,9 +753,9 @@ function createAmapAdapter({ container, config, callbacks, simulateFailure }) {
       window.setTimeout(flushPendingFit, 100);
       return;
     }
-    const padding = pendingFit;
+    const { padding, points } = pendingFit;
     pendingFit = null;
-    adapterRef.fit(padding);
+    if (!points || lastView?.place?.coord === points[0]) adapterRef.fit(padding, points);
   }
 
   function normalizePadding(padding) {
@@ -703,7 +812,21 @@ function createAmapAdapter({ container, config, callbacks, simulateFailure }) {
         viewMode: "2D",
         dragRotate: false,
         resizeEnable: true,
+        isHotspot: true,
       });
+      map.on("hotspotclick", ({ name, lnglat, originEvent }) => {
+        if (typeof name !== "string" || !lnglat || originEvent?.detail > 1) return;
+        // 高德先报告热点单击，再识别后续双击缩放。
+        const timer = window.setTimeout(() => {
+          pendingHotspots.delete(timer);
+          callbacks.onHotspotClick?.(name.trim(), (longitude, latitude) =>
+            lnglat.distance(new AMap.LngLat(...wgs84ToGcj02(longitude, latitude))));
+        }, 500);
+        pendingHotspots.add(timer);
+      });
+      map.on("dblclick", cancelHotspots);
+      map.on("dragstart", cancelHotspots);
+      map.on("zoomstart", cancelHotspots);
       map.on("complete", () => markReady());
       map.on("moveend", () => redraw());
       map.on("zoomend", () => redraw());
@@ -723,13 +846,13 @@ function createAmapAdapter({ container, config, callbacks, simulateFailure }) {
       lastView = view;
       redraw();
     },
-    fit(padding) {
+    fit(padding, points) {
       if (!map) return;
       if (!mapReady) {
-        pendingFit = padding;
+        pendingFit = { padding, points };
         return;
       }
-      const points = flattenBounds(lastView ?? { markers: [], lines: [], gaps: [] });
+      points ??= flattenBounds(lastView ?? { markers: [], lines: [], gaps: [] });
       if (!points.length) return;
       const pad = normalizePadding(padding);
       const { minLng, maxLng, minLat, maxLat } = boundsOf(points);
@@ -757,6 +880,7 @@ function createAmapAdapter({ container, config, callbacks, simulateFailure }) {
       redraw();
     },
     fitCountry() {
+      pendingFit = null;
       if (!map) return;
       const [lng, lat] = wgs84ToGcj02(104, 35);
       map.setZoomAndCenter(4, [lng, lat]);
@@ -773,6 +897,7 @@ function createAmapAdapter({ container, config, callbacks, simulateFailure }) {
       redraw();
     },
     destroy() {
+      cancelHotspots();
       overlay?.remove();
       fitOverlay?.setMap?.(null);
       fitOverlay = null;
@@ -793,6 +918,7 @@ export async function initMapController({ container, sourceEl, noticeEl, config,
   let state = "loading";
   let degraded = false;
   let lastPadding = null;
+  let placePadding = null;
 
   function setSource(text) {
     if (sourceEl) sourceEl.textContent = text;
@@ -828,13 +954,7 @@ export async function initMapController({ container, sourceEl, noticeEl, config,
     state = degraded ? "degraded" : "ready";
     container.replaceChildren();
     container.classList.remove("amap-ready");
-    adapter = createOfflineAdapter({
-      container,
-      callbacks: {
-        onLineClick: (candidateId) => callbacks.onLineClick?.(candidateId),
-        onMarkerClick: (nodeId) => callbacks.onMarkerClick?.(nodeId),
-      },
-    });
+    adapter = createOfflineAdapter({ container, callbacks });
     await adapter.mount();
     if (degraded) {
       // 底图失败时隐藏轨迹与标记：离线画布上的折线不能当作真实底图证据。
@@ -859,7 +979,7 @@ export async function initMapController({ container, sourceEl, noticeEl, config,
         container.classList.remove("offline");
         state = "loading";
         setSource("正在加载底图");
-        adapter = createAmapAdapter({ container, config, simulateFailure, callbacks: { onLineClick: (id) => callbacks.onLineClick?.(id), onMarkerClick: (id) => callbacks.onMarkerClick?.(id) } });
+        adapter = createAmapAdapter({ container, config, simulateFailure, callbacks });
         await adapter.mount();
         kind = "amap";
         degraded = false;
@@ -888,15 +1008,16 @@ export async function initMapController({ container, sourceEl, noticeEl, config,
   async function restart() {
     setNotice(null);
     await start();
-    if (degraded) {
-      adapter?.render({ markers: [], lines: [], gaps: [] });
-      return;
-    }
-    if (lastView) adapter?.render(lastView);
-    if (lastPadding !== null) adapter?.fit(lastPadding);
+    if (lastView) renderView();
+    if (placePadding !== null && lastView?.place) adapter?.fit(placePadding, [lastView.place.coord]);
+    else if (!degraded && lastPadding !== null) adapter?.fit(lastPadding);
   }
 
   let lastView = null;
+
+  function renderView() {
+    adapter?.render(degraded ? { place: lastView.place } : lastView);
+  }
 
   await start();
 
@@ -912,17 +1033,21 @@ export async function initMapController({ container, sourceEl, noticeEl, config,
     },
     render(view) {
       lastView = view;
-      if (degraded) {
-        adapter?.render({ markers: [], lines: [], gaps: [] });
-        return;
-      }
-      adapter?.render(view);
+      if (!view.place) placePadding = null;
+      renderView();
+    },
+    locatePlace(padding) {
+      if (!lastView?.place) return;
+      placePadding = padding;
+      adapter?.fit(padding, [lastView.place.coord]);
     },
     fit(padding) {
+      placePadding = null;
       lastPadding = padding;
       adapter?.fit(padding);
     },
     fitCountry() {
+      placePadding = null;
       adapter?.fitCountry?.();
     },
     zoomIn() {

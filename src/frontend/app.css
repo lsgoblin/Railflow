@@ -2834,3 +2834,135 @@ body.modal-open {
   }
 }
 
+
+/* 城市行程沿用地图面板，站点和车次按实际乘车顺序排列。 */
+.replay-constraints,
+.replay-node-stations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin-block: var(--space-3);
+}
+
+.replay-search .date-input,
+.replay-constraints .date-input,
+.replay-node-stations .date-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.replay-matches,
+.replay-nodes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.replay-matches {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.replay-search-results {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.replay-match-group h2 {
+  margin: var(--space-2) 0 var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+}
+
+.replay-matches .button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: normal;
+}
+
+.replay-matches .replay-place-result {
+  display: grid;
+  gap: var(--space-1);
+  overflow-wrap: anywhere;
+}
+
+.replay-place-details {
+  display: grid;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  padding: var(--space-3);
+}
+
+.replay-place-details h2,
+.replay-place-details p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.replay-place-details h2 { font-size: var(--font-size-body); }
+.replay-place-details p:empty { display: none; }
+.replay-place-details .replay-search-results { max-height: 160px; }
+.replay-place-heading,
+.replay-place-search { display: flex; align-items: center; gap: var(--space-2); }
+.replay-place-heading { justify-content: space-between; }
+.replay-place-heading .icon-button,
+.replay-place-search .button { flex-shrink: 0; }
+.replay-place-search .button { white-space: nowrap; }
+.replay-place-details .button[aria-pressed="true"] { border-color: var(--color-primary); }
+
+.overlay-place { pointer-events: none; }
+.overlay-place path { fill: var(--color-primary); stroke: var(--color-surface); stroke-width: 2; }
+.overlay-place circle { fill: var(--color-surface); }
+
+.replay-node,
+.replay-leg {
+  border-top: 1px solid var(--color-border);
+  padding-block: var(--space-3);
+}
+
+.replay-node-head,
+.replay-node-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.replay-node-head,
+#workspace-panel .panel-heading {
+  justify-content: space-between;
+}
+
+.replay-node-stations { margin-bottom: 0; }
+.replay-role { margin-left: var(--space-2); }
+.replay-role,
+.replay-connection { color: var(--color-text-muted); }
+.replay-leg h2 { font-size: var(--font-size-body); margin: 0 0 var(--space-2); }
+.replay-connection,
+.replay-train p { margin: var(--space-1) 0; }
+.replay-train + .replay-connection { margin-top: var(--space-3); }
+.replay-train { padding-left: var(--space-2); border-left: 2px solid var(--color-border); }
+.replay-panel-toggle { white-space: nowrap; }
+#workspace-panel .panel-body { padding: var(--space-4); }
+#workspace-panel[data-compact="true"] { bottom: auto; }
+#workspace-panel [hidden],
+#city-directory-status:empty,
+#place-status:empty { display: none; }
+
+.map-overlay .overlay-city,
+.map-overlay .overlay-station { pointer-events: auto; cursor: pointer; }
+.overlay-city text,
+.overlay-station text {
+  fill: var(--color-text);
+  stroke: var(--color-surface);
+  stroke-width: 3;
+  paint-order: stroke;
+  font-size: 12px;
+  font-weight: 600;
+}
+.overlay-city circle:last-of-type { fill: var(--color-primary); stroke: var(--color-surface); }
+.overlay-station circle:last-of-type { fill: var(--color-surface); stroke: var(--color-text); stroke-width: 2; }
+.overlay-city:focus-visible circle:last-of-type { stroke: var(--color-text); stroke-width: 3; }
+.overlay-station:focus-visible circle:last-of-type { stroke: var(--color-primary); stroke-width: 3; }
+.overlay-marker[role="button"]:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }

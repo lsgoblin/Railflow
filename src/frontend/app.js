@@ -1,441 +1,718 @@
-/* RailFlow 启动入口（MVP：同车次直达历史回放）。
- *
- * 只做编排：状态转移进 store，数据经 api.js，地图经 map.js 适配器。
- * 启动先读 /api/mvp/context，用 dataset.version 与 defaultReferenceServiceDate 初始化；
- * 页面与 /api 同源，失败如实报错，不静默回退夹具。
- */
-
+/* 统一城市行程。所有选站、时刻和区间结果均以历史回放 API 为准。 */
 import config from "./config.js";
-import { createApi } from "./api.js";
-import { createStationPicker } from "./mvp-search.js";
-import {
-  renderDatasetSummary,
-  renderResults,
-  renderStatus,
-  renderWarnings,
-} from "./mvp-panel.js";
-import { initMapController } from "./map.js";
-import { dispatch, getState, subscribe, validateMvpQuery } from "./store.js";
-import { el, showToast } from "./ui.js";
+import { createApi, errorText } from "./api.js";
+import { gcj02ToWgs84, initMapController } from "./map.js";
+import { closeModal, el, ICONS, openModal } from "./ui.js";
 
-const $ = (selector, root = document) => root.querySelector(selector);
-const params = new URLSearchParams(location.search);
-const devEnabled = params.get("dev") === "1";
-const forceMapMode = params.get("map");
-const simulateMapFailure = params.get("mapfail") === "1" ? { failNext: true } : null;
+const $ = (selector) => document.querySelector(selector);
+const api = createApi({ live: true });
+const panel = $("#workspace-panel");
+const itinerary = $("#itinerary");
+const results = $("#replay-results");
+const status = $("#query-status");
+const search = $("#location-search");
+const suggestions = $("#location-results");
+const placeSearch = $("#place-search");
+const placeStatus = $("#place-status");
+const placeResults = $("#place-results");
+const placeDetails = $("#place-details");
+const departure = $("#departure-date");
+const reference = $("#reference-date");
+const transfer = $("#transfer-minutes");
+const toggle = $("#panel-toggle");
+const nodes = [];
+const stationLists = new Map();
+const stations = new Map();
+const cities = new Map();
+let catalogStations = [];
+let context;
+let map;
+let nextNodeId = 1;
+let plan;
+let geometry = new Map();
+let planRequest;
+let searchRequest;
+let placeRequest;
+let selectedPlace;
+let searchTimer;
+let composingSearch = false;
+let selectedTrain;
 
-const api = createApi();
-
-const app = $("#app");
-const datasetSummaryEl = $("#dataset-summary");
-const fixtureBadge = $("#fixture-badge");
-const resultsEl = $("#mvp-results");
-const statusEl = $("#query-status");
-const warningsEl = $("#warnings");
-const dateInput = $("#service-date");
-const queryButton = $("#query-button");
-const mapCanvas = $("#map-canvas");
-const mapSource = $("#map-source");
-const mapStatus = $("#map-status");
-const errorEls = {
-  from: $("#error-from"),
-  to: $("#error-to"),
-  date: $("#error-date"),
+const coordinate = ({ longitude, latitude }) => [longitude, latitude];
+const cityLabel = ({ name, administration }) => name === administration ? name : `${name} · ${administration}`;
+const stationLabel = (city, station) => `${station.stopName}（${station.stopId}） · ${cityLabel(city)}`;
+const hotspotStationRadiusMeters = 1500;
+const stripStationSuffix = (name) => name.replace(/(?:火车)?站$/, "");
+const button = (text, action, attrs = {}) =>
+  el("button", { class: "button button-secondary", text, attrs: { type: "button", ...attrs }, on: { click: action } });
+const clock = (dateTime) => dateTime.slice(0, 16).replace("T", " ");
+const trainKey = (leg, index) => `${leg.index}-${index}`;
+const minutes = (seconds) => Number((seconds / 60).toFixed(2));
+const geometryReasons = {
+  NO_SHAPE: "源数据缺少轨迹",
+  INVALID_SHAPE: "源轨迹无效",
+  INVALID_STATION_COORDINATE: "站点坐标无效",
+  BOUNDARY_UNRESOLVED: "无法匹配铁路区间边界",
+  BOUNDARY_AMBIGUOUS: "铁路区间边界有多个匹配",
 };
 
-let mapController = null;
-let lastMapKey = "";
-let lastFitKey = "";
-
-/* ---------- 查询与选择 ---------- */
-
-function datasetVersion(state) {
-  return state.mvp.context.data?.dataset?.version ?? "";
+function setCollapsed(collapsed) {
+  panel.dataset.compact = String(collapsed);
+  $("#panel-body").hidden = collapsed;
+  toggle.setAttribute("aria-expanded", String(!collapsed));
+  toggle.textContent = collapsed ? `展开行程（${nodes.length} 城）` : "收起行程";
 }
 
-function selectedTrip(state) {
-  return state.mvp.trips.items.find((item) => item.tripId === state.mvp.selectedTripId) ?? null;
+function focusCard(card, control) {
+  const target = control && card?.querySelector(`[data-control="${control}"]:not(:disabled)`);
+  (target || card)?.focus();
 }
 
-const actions = {
-  async query() {
-    const state = getState();
-    const validation = validateMvpQuery(state);
-    if (!validation.valid) {
-      render(state);
-      return;
-    }
-    const requestId = state.mvp.trips.requestId + 1;
-    const revision = state.mvp.pairRevision;
-    dispatch({ type: "MVP_TRIPS_LOADING", requestId, revision });
-    const response = await api.searchTrips({
-      datasetVersion: datasetVersion(state),
-      fromStopId: state.mvp.from.stopId,
-      toStopId: state.mvp.to.stopId,
-      referenceServiceDate: state.mvp.date,
-    });
-    if (!response.ok) {
-      dispatch({ type: "MVP_TRIPS_ERROR", requestId, revision, error: response.error });
-      return;
-    }
-    dispatch({
-      type: "MVP_TRIPS_READY",
-      requestId,
-      revision,
-      items: response.data?.items ?? [],
-      emptyReason: response.data?.emptyReason ?? null,
-    });
-  },
+function focusNode(nodeId, control) {
+  setCollapsed(false);
+  focusCard(document.getElementById(`visit-${nodeId}`), control);
+}
 
-  async selectTrip(tripId) {
-    const state = getState();
-    const item = state.mvp.trips.items.find((candidate) => candidate.tripId === tripId);
-    dispatch({ type: "MVP_TRIP_SELECT", tripId });
-    if (!item) return;
-    await Promise.all([loadStops(item), loadGeometry(item)]);
-  },
+function editNodes(focusId, control) {
+  renderNodes();
+  recalculate();
+  if (focusId) focusNode(focusId, control);
+}
 
-  async retryStops() {
-    const item = selectedTrip(getState());
-    if (item) await loadStops(item);
-  },
+function addCity(city, station) {
+  const node = { id: nextNodeId++, city, arrivalStopId: station?.stopId, departureStopId: station?.stopId };
+  nodes.push(node);
+  if (station) stations.set(station.stopId, station);
+  editNodes();
+  if (!stationLists.has(city.cityId)) loadStations(city.cityId);
+}
 
-  async retryGeometry() {
-    const item = selectedTrip(getState());
-    if (item) await loadGeometry(item);
-  },
-};
+function mapFocusTarget() {
+  return panel.dataset.compact === "true" ? toggle : search;
+}
 
-async function loadStops(item) {
-  const state = getState();
-  const requestId = state.mvp.stops.requestId + 1;
-  const revision = state.mvp.tripRevision;
-  dispatch({ type: "MVP_STOPS_LOADING", requestId, tripId: item.tripId, revision });
-  const response = await api.loadTripStops({
-    datasetVersion: datasetVersion(state),
-    tripId: item.tripId,
-    referenceServiceDate: state.mvp.date,
-  });
-  if (!response.ok) {
-    dispatch({ type: "MVP_STOPS_ERROR", requestId, tripId: item.tripId, revision, error: response.error });
+function addMapLocation(city, station, keyboard) {
+  const existing = nodes.find((node, index) => node.city.cityId === city.cityId && (!station ||
+    (index > 0 && node.arrivalStopId === station.stopId) ||
+    ((index === 0 || index < nodes.length - 1) && node.departureStopId === station.stopId)));
+  if (existing) {
+    focusNode(existing.id);
     return;
   }
-  dispatch({ type: "MVP_STOPS_READY", requestId, tripId: item.tripId, revision, data: response.data });
+  addCity(city, station);
+  if (keyboard) mapFocusTarget().focus();
 }
 
-async function loadGeometry(item) {
-  const state = getState();
-  const key = `${item.tripId}:${item.boardSequence}:${item.alightSequence}:${state.mvp.date}`;
-  const requestId = state.mvp.geometry.requestId + 1;
-  const revision = state.mvp.tripRevision;
-  dispatch({ type: "MVP_GEOMETRY_LOADING", requestId, key, revision });
-  const response = await api.loadGeometry({
-    datasetVersion: datasetVersion(state),
-    tripId: item.tripId,
-    referenceServiceDate: state.mvp.date,
-    fromStopId: item.from.stopId,
-    toStopId: item.to.stopId,
-    boardSequence: item.boardSequence,
-    alightSequence: item.alightSequence,
-  });
-  if (!response.ok) {
-    dispatch({ type: "MVP_GEOMETRY_ERROR", requestId, key, revision, error: response.error });
+function chooseMapStation(matches, keyboard) {
+  if (matches.length === 1) {
+    const { cityId, station } = matches[0];
+    addMapLocation(cities.get(cityId), station, keyboard);
     return;
   }
-  dispatch({ type: "MVP_GEOMETRY_READY", requestId, key, revision, data: response.data });
-}
-
-/* ---------- 地图 ---------- */
-
-function buildOverlay(state) {
-  const mvp = state.mvp;
-  const markers = [];
-  if (mvp.from) {
-    markers.push({
-      kind: "start",
-      coord: [mvp.from.longitude, mvp.from.latitude],
-      nodeId: "from",
-      cityName: mvp.from.stopName,
-      stationName: mvp.from.stopId,
-    });
-  }
-  if (mvp.to) {
-    markers.push({
-      kind: "end",
-      coord: [mvp.to.longitude, mvp.to.latitude],
-      nodeId: "to",
-      cityName: mvp.to.stopName,
-      stationName: mvp.to.stopId,
-    });
-  }
-  const geometry = mvp.geometry.data;
-  const lines = [];
-  if (geometry && geometry.status === "READY" && Array.isArray(geometry.points) && geometry.points.length > 1) {
-    lines.push({
-      key: mvp.selectedTripId,
-      candidateId: mvp.selectedTripId,
-      legId: mvp.selectedTripId,
-      role: "current",
-      points: geometry.points,
-      missing: false,
-    });
-  }
-  return {
-    synthetic: Boolean(state.mvp.context.data?.synthetic),
-    datasetVersion: datasetVersion(state),
-    markers,
-    lines,
-    gaps: [],
-    selectedCandidateId: mvp.selectedTripId ?? null,
-    nodeCount: markers.length,
-  };
-}
-
-function computeMapPadding() {
-  const panel = $("#workspace-panel");
-  const rect = panel?.getBoundingClientRect();
-  const isMobile = window.matchMedia("(max-width: 767px)").matches;
-  if (isMobile) {
-    return { top: 84, left: 12, right: 12, bottom: Math.min(260, Math.round(window.innerHeight * 0.42)) };
-  }
-  const panelVisible = rect && rect.width > 0;
-  return {
-    left: panelVisible ? Math.round(rect.right) + 24 : 48,
-    top: 112,
-    right: 88,
-    bottom: 64,
-  };
-}
-
-function renderMap(state) {
-  if (!mapController) return;
-  const mvp = state.mvp;
-  const key = JSON.stringify([
-    mvp.context.data?.dataset?.version,
-    mvp.from?.stopId,
-    mvp.to?.stopId,
-    mvp.selectedTripId,
-    mvp.geometry.status,
-    mvp.geometry.data?.status,
-    mvp.geometry.data?.points?.length ?? 0,
-    mapController.degraded,
-  ]);
-  if (key !== lastMapKey) {
-    lastMapKey = key;
-    mapController.render(buildOverlay(state));
-  }
-  const fitKey = JSON.stringify([
-    mvp.from?.stopId,
-    mvp.to?.stopId,
-    mvp.selectedTripId,
-    mvp.geometry.data?.status,
-    mvp.geometry.data?.points?.length ?? 0,
-  ]);
-  if (fitKey !== lastFitKey && (mvp.from || mvp.to)) {
-    lastFitKey = fitKey;
-    requestAnimationFrame(() => mapController?.fit(computeMapPadding()));
-  }
-}
-
-function updateMapSource(state) {
-  if (!mapSource) return;
-  let base = "底图未加载 · 经纬度等距投影（未接入底图服务）";
-  if (mapController?.adapterName === "amap") base = "© 高德地图";
-  else if (mapController?.degraded) base = "底图未加载 · 已隐藏轨迹";
-  const synthetic = state.mvp.context.data?.synthetic ? " · 开发夹具" : "";
-  mapSource.textContent = `${base}${synthetic}`;
-}
-
-async function setupMap() {
-  mapController = await initMapController({
-    container: mapCanvas,
-    sourceEl: mapSource,
-    noticeEl: mapStatus,
-    config,
-    forceMode: forceMapMode,
-    simulateFailure: simulateMapFailure,
-    callbacks: {
-      onState({ status, notice }) {
-        dispatch({
-          type: "MAP_SET_STATE",
-          status,
-          notice,
-          adapter: mapController?.adapterName ?? "offline",
-        });
-      },
-      onMarkerClick(nodeId) {
-        const target = nodeId === "to" ? "to" : "from";
-        (target === "to" ? toPicker : fromPicker)?.focus();
-      },
-    },
+  const choices = matches.map(({ cityId, station }) => {
+    const city = cities.get(cityId);
+    return el("li", {}, button(stationLabel(city, station), () => {
+      closeModal({ restoreFocus: false });
+      addMapLocation(city, station, true);
+    }));
   });
-  updateMapSource(getState());
-  lastMapKey = "";
-  lastFitKey = "";
-  renderMap(getState());
-  app.dataset.mapReady = "true";
+  openModal({ title: "选择铁路站", previousFocus: mapFocusTarget(), initialFocus: choices[0].firstElementChild,
+    body: el("ul", { class: "replay-matches" }, choices) });
 }
 
-/* ---------- 渲染 ---------- */
-
-function renderFieldErrors(validation) {
-  for (const [key, node] of Object.entries(errorEls)) {
-    if (!node) continue;
-    const message = validation?.errors?.[key] ?? "";
-    node.hidden = !message;
-    node.textContent = message;
+function pickHotspot(name, distanceTo) {
+  if (!name.endsWith("站")) {
+    const cityName = name.replace(/市$/, "");
+    const matches = [...cities.values()].filter((city) => city.name.replace(/市$/, "") === cityName);
+    if (matches.length === 1) addMapLocation(matches[0]);
+    return;
   }
+
+  const stationName = stripStationSuffix(name);
+  const matches = catalogStations.filter(({ station }) => stripStationSuffix(station.stopName) === stationName &&
+    distanceTo(...coordinate(station)) <= hotspotStationRadiusMeters);
+  if (matches.length) chooseMapStation(matches);
 }
 
-function render(state) {
-  renderDatasetSummary(datasetSummaryEl, state, api);
-  renderWarnings(warningsEl, state);
-  const validation = validateMvpQuery(state);
-  renderStatus(statusEl, state, validation);
-  renderResults(resultsEl, state, actions);
-  fromPicker?.render();
-  toPicker?.render();
+async function loadStations(cityId) {
+  stationLists.set(cityId, { loading: true });
+  renderNodes();
+  const response = await api.replayCity(context.dataset.version, cityId);
+  const items = response.data?.item.stations.map(({ station }) => station);
+  stationLists.set(cityId, { items, error: response.error });
+  for (const station of items ?? []) stations.set(station.stopId, station);
+  renderNodes();
+  renderMap();
+}
 
-  if (document.activeElement !== dateInput && dateInput.value !== state.mvp.date) {
-    dateInput.value = state.mvp.date;
+function stationSelect(node, field, title, options) {
+  const select = el("select", {
+    class: "date-input",
+    attrs: { "aria-label": `${node.city.name}${title}`, disabled: !options, "data-control": field },
+    on: { change: ({ target }) => {
+      node[field] = target.value || undefined;
+      recalculate();
+    } },
+  }, el("option", { text: "自动选站", attrs: { value: "" } }));
+  const known = stations.get(node[field]);
+  for (const station of options ?? (known ? [known] : [])) {
+    select.append(el("option", { text: `${station.stopName}（${station.stopId}）`, attrs: { value: station.stopId } }));
   }
-  const dataset = state.mvp.context.data?.dataset;
-  dateInput.min = dataset?.coverageStart ?? "";
-  dateInput.max = dataset?.coverageEnd ?? "";
-  renderFieldErrors(validation);
-
-  queryButton.disabled = !validation.valid
-    || state.mvp.context.status !== "ready"
-    || state.mvp.trips.status === "loading";
-
-  fixtureBadge.hidden = !api.synthetic;
-  app.dataset.apiMode = api.mode;
-  renderMap(state);
-  updateMapSource(state);
+  select.value = node[field] ?? "";
+  return el("label", { class: "field" }, el("span", { class: "field-label", text: title }), select);
 }
 
-/* ---------- 事件 ---------- */
-
-function bindEvents() {
-  $("#mvp-form").addEventListener("submit", (event) => {
-    event.preventDefault();
-    actions.query();
-  });
-
-  dateInput.addEventListener("change", () => {
-    dispatch({ type: "MVP_DATE_SET", date: dateInput.value });
-  });
-
-  for (const button of document.querySelectorAll("[data-map-action]")) {
-    button.addEventListener("click", () => {
-      const action = button.dataset.mapAction;
-      if (action === "fit") mapController?.fit(computeMapPadding());
-      if (action === "zoom-in") mapController?.zoomIn();
-      if (action === "zoom-out") mapController?.zoomOut();
+function renderNodes() {
+  const focus = document.activeElement?.closest(".replay-node");
+  const control = document.activeElement?.dataset.control;
+  itinerary.replaceChildren(...nodes.map((node, index) => {
+    const first = index === 0;
+    const last = index === nodes.length - 1;
+    const role = first ? "起点" : last ? "终点" : "停留";
+    const entry = stationLists.get(node.city.cityId);
+    const move = (offset, action) => {
+      const neighbor = nodes[index + offset];
+      nodes[index + offset] = node;
+      nodes[index] = neighbor;
+      editNodes(node.id, action);
+    };
+    const actionButton = (icon, title, action, disabled) => el("button", {
+      class: "icon-button", html: ICONS[icon],
+      attrs: { type: "button", "aria-label": `${title}${node.city.name}`, title, disabled, "data-control": icon },
+      on: { click: action },
     });
-  }
-
-  window.addEventListener("resize", () => mapController?.resize());
-}
-
-/* ---------- 开发入口（?dev=1 仅夹具检查） ---------- */
-
-function renderDevBar() {
-  if (!devEnabled) return;
-  const root = $("#dev-root");
-  root.hidden = false;
-  const row = el("div", { class: "dev-row" });
-  row.append(el("span", {
-    class: "dev-label",
-    text: "开发夹具模式（?dev=1）：数据为合成夹具，不代表真实车次、时刻或轨迹。",
+    const card = el("li", { class: "replay-node", attrs: { id: `visit-${node.id}`, tabindex: "-1" } },
+      el("div", { class: "replay-node-head" },
+        el("div", {}, el("strong", { text: node.city.name }), el("span", { class: "replay-role", text: role })),
+        el("div", { class: "replay-node-actions" },
+          actionButton("arrowUp", "上移", () => move(-1, "arrowUp"), first),
+          actionButton("arrowDown", "下移", () => move(1, "arrowDown"), last),
+          actionButton("trash", "移除", () => {
+            nodes.splice(index, 1);
+            editNodes((nodes[index] ?? nodes.at(-1))?.id, "trash");
+            if (!nodes.length) search.focus();
+          }))),
+      el("div", { class: "replay-node-stations" },
+        !first && stationSelect(node, "arrivalStopId", "到站", entry?.items),
+        (!last || first) && stationSelect(node, "departureStopId", "发站", entry?.items)));
+    if (!first && !last) {
+      const stay = el("input", {
+        class: "date-input", attrs: { type: "number", min: 1, max: 2147483647, step: 1, required: true,
+          value: node.stayDays ?? 1, "aria-label": `${node.city.name}停留天数`, "data-control": "stay" },
+        on: { change: ({ target }) => {
+          node.stayDays = target.valueAsNumber;
+          recalculate();
+        } },
+      });
+      card.querySelector(".replay-node-stations").append(
+        el("label", { class: "field" }, el("span", { class: "field-label", text: "停留天数" }), stay));
+      if (Number.isNaN(node.stayDays)) stay.value = "";
+    }
+    if (entry?.error) card.append(button("重试加载车站", () => loadStations(node.city.cityId)));
+    return card;
   }));
-  row.append(el("button", {
-    class: "button button-secondary",
-    attrs: { type: "button" },
-    text: "切换到真实数据",
+  if (focus?.id) {
+    focusCard(document.getElementById(focus.id), control);
+  }
+  if (panel.dataset.compact === "true") setCollapsed(true);
+}
+
+function clearSearchResults() {
+  clearTimeout(searchTimer);
+  searchRequest?.abort();
+  suggestions.replaceChildren();
+  placeRequest?.abort();
+  placeSearch.disabled = false;
+  placeSearch.hidden = true;
+  placeStatus.textContent = "";
+  placeStatus.classList.remove("field-error");
+  placeResults.replaceChildren();
+  clearSelectedPlace();
+}
+
+function queueSearch() {
+  clearSearchResults();
+  const term = search.value.trim();
+  if (term) {
+    placeSearch.hidden = false;
+    searchTimer = setTimeout(() => findLocations(term, 0), 180);
+  }
+}
+
+async function findLocations(term, offset, association) {
+  const input = association?.input ?? search;
+  const target = association?.results ?? suggestions;
+  (association ? association.request : searchRequest)?.abort();
+  const request = new AbortController();
+  if (association) association.request = request;
+  else searchRequest = request;
+  const isCurrent = () => !request.signal.aborted && input.value.trim() === term &&
+    (!association || selectedPlace === association);
+  const more = target.querySelector(".replay-more");
+  if (more) (more.querySelector("button") ?? more).disabled = true;
+  const response = await api.replayLocations(context.dataset.version, term, offset, request.signal);
+  if (!isCurrent()) return;
+  more?.remove();
+  if (!response.ok) {
+    const retry = button("重试搜索", () => findLocations(term, offset, association));
+    const feedback = el("div", { class: "replay-more" },
+      el("p", { class: "field-error", text: errorText(response.error), attrs: { role: "status" } }), retry);
+    target.append(feedback);
+    if (offset) retry.focus();
+    return;
+  }
+  const { items, hasMore } = response.data;
+  if (!items.length && !offset) {
+    target.append(el("p", { text: association ? "没有匹配的本地城市或铁路站，请换个关键词。" : "没有匹配的城市或车站。",
+      attrs: { role: "status" } }));
+    return;
+  }
+  let firstNewMatch;
+  for (const [type, heading] of [["CITY", "城市"], ["STATION", "铁路站"]]) {
+    const matches = items.filter((item) => item.type === type);
+    if (!matches.length) continue;
+    let list = target.querySelector(`[data-location-type="${type}"]`);
+    if (!list) {
+      list = el("ul", { class: "replay-matches", dataset: { locationType: type },
+        attrs: { id: association ? null : `location-${type.toLowerCase()}-matches`, "aria-label": heading } });
+      target.append(el("section", { class: "replay-match-group" }, el("h2", { text: heading }), list));
+    }
+    for (const { city, station } of matches) {
+      const stop = station?.station;
+      const text = stop ? stationLabel(city, stop) : cityLabel(city);
+      const match = button(text, () => {
+        if (!target.contains(match) || input.value.trim() !== term || (association && selectedPlace !== association)) return;
+        if (association) {
+          association.choice?.button.setAttribute("aria-pressed", "false");
+          association.choice = { city, stop, button: match };
+          match.setAttribute("aria-pressed", "true");
+          association.selection.textContent = `待确认：${text}`;
+          association.confirm.disabled = placeSearch.disabled;
+          return;
+        }
+        search.value = "";
+        clearSearchResults();
+        addCity(city, stop);
+        search.focus();
+      }, association ? { "aria-pressed": "false" } : {});
+      match.classList.add("replay-match");
+      firstNewMatch ??= match;
+      list.append(el("li", {}, match));
+    }
+  }
+  if (hasMore) {
+    const next = button("更多结果", () => findLocations(term, offset + items.length, association));
+    next.classList.add("replay-more");
+    target.append(next);
+  }
+  if (offset) firstNewMatch?.focus();
+}
+
+const placeAddress = ({ city, district, address }) => [city, district, address].filter(Boolean).join(" · ");
+
+function clearSelectedPlace() {
+  if (!selectedPlace) return;
+  selectedPlace.request?.abort();
+  selectedPlace = undefined;
+  placeDetails.hidden = true;
+  placeDetails.replaceChildren();
+  renderMap();
+}
+
+function showPlace(place, resultButton) {
+  clearSelectedPlace();
+  const title = el("h2", { text: place.name, attrs: { tabindex: "-1" } });
+  const choices = el("div", { class: "replay-search-results" });
+  const selection = el("p", { class: "field-hint", attrs: { role: "status" } });
+  const confirm = button("确认并加入行程", () => {
+    if (selectedPlace !== association || !association.choice || placeSearch.disabled) return;
+    const { city, stop } = association.choice;
+    dismissSearch();
+    addCity(city, stop);
+  }, { disabled: true });
+  confirm.classList.replace("button-secondary", "button-primary");
+  const clearChoices = () => {
+    association.request?.abort();
+    association.choice = undefined;
+    confirm.disabled = true;
+    selection.textContent = "";
+    choices.replaceChildren();
+  };
+  const input = el("input", {
+    class: "date-input",
+    attrs: { type: "search", id: "place-association-search", value: place.city ?? "", autocomplete: "off",
+      required: true, maxlength: 64, placeholder: "输入本地城市、站名或站码" },
     on: {
-      click: () => {
-        const next = new URLSearchParams(location.search);
-        next.delete("dev");
-        next.delete("scenario");
-        location.search = next.toString();
+      input: clearChoices,
+      compositionstart: () => {
+        association.composing = true;
+        clearChoices();
       },
+      compositionend: () => { association.composing = false; },
     },
-  }));
-  root.append(row);
+  });
+  const runSearch = () => {
+    if (association.composing) return;
+    clearChoices();
+    const term = input.value.trim();
+    if (!term) return;
+    choices.append(el("p", { class: "replay-more field-hint", text: "正在查询本地城市和铁路站…", attrs: { role: "status" } }));
+    findLocations(term, 0, association);
+  };
+  const submit = el("button", { class: "button button-secondary", text: "查找", attrs: { type: "submit" } });
+  const form = el("form", { on: { submit: (event) => { event.preventDefault(); runSearch(); } } },
+    el("label", { class: "field-label", text: "关联本地城市或铁路站", attrs: { for: input.id } }),
+    el("div", { class: "replay-place-search" }, input, submit));
+  const close = () => {
+    clearSelectedPlace();
+    (resultButton.isConnected ? resultButton : search).focus();
+  };
+  const association = { place, coord: gcj02ToWgs84(...coordinate(place)), input, results: choices, selection, confirm };
+  selectedPlace = association;
+  placeDetails.hidden = false;
+  placeDetails.append(
+    el("div", { class: "replay-place-heading" }, title,
+      el("button", { class: "icon-button", html: ICONS.close, attrs: { type: "button", "aria-label": "关闭地点详情" },
+        on: { click: close } })),
+    el("p", { class: "field-hint", text: placeAddress(place) || "地址未提供" }),
+    el("p", { class: "field-hint", text: `高德地点 · ${place.poiId}` }),
+    form, choices, selection, confirm);
+  title.focus();
+  renderMap();
+  map?.locatePlace(mapPadding());
+  if (input.value) runSearch();
 }
 
-/* ---------- 启动 ---------- */
+async function findPlaces() {
+  const term = search.value.trim();
+  if (!term || placeSearch.disabled) return;
+  const request = new AbortController();
+  placeRequest = request;
+  placeSearch.disabled = true;
+  const oldMatches = placeResults.querySelectorAll(".replay-match");
+  for (const match of oldMatches) match.disabled = true;
+  if (selectedPlace) selectedPlace.confirm.disabled = true;
+  placeStatus.classList.remove("field-error");
+  placeStatus.textContent = "正在查询高德地点…";
+  const response = await api.searchAmapPlaces(term, request.signal);
+  if (request.signal.aborted || search.value.trim() !== term) return;
+  placeSearch.disabled = false;
+  if (selectedPlace) selectedPlace.confirm.disabled = !selectedPlace.choice;
+  if (!response.ok) {
+    for (const match of oldMatches) match.disabled = false;
+    placeStatus.classList.add("field-error");
+    placeStatus.textContent = errorText(response.error);
+    return;
+  }
+  const { items } = response.data;
+  if (selectedPlace && !items.some((place) => Object.keys(selectedPlace.place).every((key) => place[key] === selectedPlace.place[key]))) {
+    const focusedDetails = placeDetails.contains(document.activeElement);
+    clearSelectedPlace();
+    if (focusedDetails) placeSearch.focus();
+  }
+  placeStatus.textContent = items.length ? "高德地点" : "没有找到匹配的高德地点。";
+  placeResults.replaceChildren();
+  if (!items.length) return;
+  const labels = items.map((place) => `${place.name} · ${placeAddress(place)}`);
+  placeResults.append(el("ul", { class: "replay-matches", attrs: { "aria-label": "高德地点" } },
+    items.map((place, index) => {
+      const label = [placeAddress(place), labels.indexOf(labels[index]) !== labels.lastIndexOf(labels[index]) && place.poiId]
+        .filter(Boolean).join(" · ");
+      const match = button("", () => {
+        if (!placeSearch.disabled && placeResults.contains(match) && search.value.trim() === term) showPlace(place, match);
+      });
+      match.classList.add("replay-match", "replay-place-result");
+      match.append(el("strong", { text: place.name }), label && el("span", { class: "field-hint", text: label }));
+      return el("li", {}, match);
+    })));
+}
 
-const fromPicker = createStationPicker({
-  root: $("#station-from"),
-  side: "from",
-  label: "出发站",
-  placeholder: "搜索站名或 stop_id",
-  api,
-  dispatch,
-  getState,
-});
+async function recalculate() {
+  planRequest?.abort();
+  plan = undefined;
+  geometry = new Map();
+  selectedTrain = undefined;
+  renderResults();
+  renderMap();
+  if (!context || nodes.length < 2) {
+    if (context) status.textContent = nodes.length ? "再添加一个城市即可规划行程。" : "";
+    return;
+  }
+  if (!departure.validity.valid || !reference.validity.valid ||
+      departure.value.length !== 10 || reference.value.length !== 10) {
+    status.textContent = "请填写有效的出发日期和参考自然日。";
+    return;
+  }
+  if (!transfer.validity.valid) {
+    status.textContent = "请填写最短换乘间隔，行程将自动计算。";
+    return;
+  }
+  if (itinerary.querySelector("input:invalid")) {
+    status.textContent = "请为每个停留城市填写有效的停留天数。";
+    return;
+  }
+  const request = new AbortController();
+  planRequest = request;
+  status.textContent = "正在计算行程…";
+  const response = await api.replayPlan({
+    datasetVersion: context.dataset.version,
+    departureDate: departure.value,
+    referenceDate: reference.value,
+    minimumTransferMinutes: transfer.valueAsNumber,
+    nodes: nodes.map(({ city, arrivalStopId, departureStopId, stayDays }, index) => ({
+      cityId: city.cityId, arrivalStopId, departureStopId,
+      stayDays: index > 0 && index < nodes.length - 1 ? stayDays : undefined,
+    })),
+  }, request.signal);
+  if (request.signal.aborted) return;
+  if (!response.ok) {
+    status.textContent = errorText(response.error);
+    status.append(" ", button("重试", recalculate));
+    return;
+  }
+  plan = response.data;
+  status.textContent = plan.emptyReason ? "部分行程未匹配。" : "行程已匹配，以下时间为北京时间。";
+  renderResults();
+  renderMap();
+  const requests = plan.legs.flatMap((leg) => leg.trains.map(async ({ trip, referenceServiceDate }, index) => {
+    const entry = await api.loadGeometry({
+      datasetVersion: context.dataset.version,
+      tripId: trip.tripId, referenceServiceDate,
+      fromStopId: trip.from.stopId, toStopId: trip.to.stopId,
+      boardSequence: trip.boardSequence, alightSequence: trip.alightSequence,
+    }, request.signal);
+    return [trainKey(leg, index), entry.ok ? entry.data : { status: "ERROR", error: entry.error }];
+  }));
+  const shapes = await Promise.all(requests);
+  if (request.signal.aborted) return;
+  geometry = new Map(shapes);
+  renderGeometryStatuses();
+  renderMap();
+}
 
-const toPicker = createStationPicker({
-  root: $("#station-to"),
-  side: "to",
-  label: "到达站",
-  placeholder: "搜索站名或 stop_id",
-  api,
-  dispatch,
-  getState,
-});
+function renderGeometryStatuses() {
+  for (const label of results.querySelectorAll("[data-geometry]")) {
+    const shape = geometry.get(label.dataset.geometry);
+    label.textContent = !shape ? "正在读取铁路轨迹…" : shape.status === "READY" && shape.points?.length > 1
+      ? shape.accuracy === "APPROXIMATE" ? "铁路轨迹（近似截取）" : "铁路轨迹可用"
+      : shape.status === "ERROR" ? `轨迹加载失败（${errorText(shape.error)}）`
+        : `铁路轨迹缺失${geometryReasons[shape.reason] ? `（${geometryReasons[shape.reason]}）` : ""}`;
+  }
+}
 
-subscribe((state) => render(state));
-bindEvents();
-renderDevBar();
+function renderResults() {
+  results.replaceChildren();
+  if (!plan) return;
+  for (let index = 0; index < nodes.length - 1; index++) {
+    const leg = plan.legs[index];
+    const section = el("section", { class: "replay-leg" },
+      el("h2", { text: `${nodes[index].city.name} → ${nodes[index + 1].city.name}` }));
+    results.append(section);
+    if (!leg) {
+      const message = index !== plan.failedLegIndex ? "等待前段匹配"
+        : plan.emptyReason === "DATE_OUTSIDE_COVERAGE" ? "续程超出参考日期覆盖范围" : "未找到可行铁路区间";
+      section.append(el("p", { class: "field-error", text: message }));
+      continue;
+    }
+    if (index > 0) section.append(el("p", { class: "replay-connection", text: `停留 ${plan.nodes[index].stayDays} 天后续程` }));
+    leg.trains.forEach((train, trainIndex) => {
+      const { trip } = train;
+      const key = trainKey(leg, trainIndex);
+      if (trainIndex > 0) {
+        const arrival = leg.trains[trainIndex - 1].trip.to;
+        const connection = leg.connections?.[trainIndex - 1];
+        const city = cities.get(train.fromCityId)?.name ?? "";
+        const text = connection?.crossStation
+          ? `${city}跨站换乘 · ${arrival.stopName} → ${trip.from.stopName} · 可用 ${minutes(connection.availableSeconds)} 分钟，接驳 ${minutes(connection.transferSeconds)} 分钟，额外缓冲 ${minutes(connection.bufferSeconds)} 分钟（${connection.source}）`
+          : `${city}换乘 · ${trip.from.stopName}`;
+        section.append(el("p", { class: "replay-connection", text }));
+      }
+      section.append(el("div", { class: "replay-train", attrs: { id: `train-${key}`, tabindex: "-1" } },
+        el("strong", { text: trip.trainName }),
+        el("p", { text: `${trip.from.stopName}（${trip.from.stopId}） ${clock(train.departureDateTime)} → ${trip.to.stopName}（${trip.to.stopId}） ${clock(train.arrivalDateTime)}` }),
+        el("p", { class: "field-hint", dataset: { geometry: key } })));
+    });
+  }
+  renderGeometryStatuses();
+}
 
-const mapSetup = setupMap();
-render(getState());
+function renderMap() {
+  if (!map) return;
+  const markers = [];
+  const lines = [];
+  nodes.forEach((node, index) => {
+    const first = index === 0;
+    const last = index === nodes.length - 1;
+    const arrival = plan?.legs[index - 1]?.trains.at(-1)?.toStation ?? stations.get(node.arrivalStopId);
+    const departure = plan?.legs[index]?.trains[0]?.fromStation ?? stations.get(node.departureStopId);
+    const station = first ? departure : last ? arrival : null;
+    markers.push({
+      kind: first ? "start" : last ? "end" : "waypoint",
+      coord: coordinate(station ?? node.city),
+      nodeId: node.id, cityName: node.city.name, stationName: station?.stopName, stopId: station?.stopId,
+      pendingStation: !station, index: index + 1,
+    });
+    if (!first && !last) {
+      for (const station of [arrival, departure?.stopId === arrival?.stopId ? null : departure]) {
+        if (station) markers.push({ kind: "station", coord: coordinate(station), name: station.stopName,
+          stopId: station.stopId, nodeId: node.id });
+      }
+    }
+  });
+  for (const leg of plan?.legs ?? []) {
+    leg.trains.forEach((train, index) => {
+      const key = trainKey(leg, index);
+      const shape = geometry.get(key);
+      if (shape?.status === "READY" && shape.points.length > 1) {
+        lines.push({ key, candidateId: key, role: key === selectedTrain ? "selected" : "current", points: shape.points });
+      }
+      if (index > 0) {
+        const previous = leg.trains[index - 1];
+        const connection = leg.connections[index - 1];
+        const transferStops = connection.crossStation ? [previous.toStation, train.fromStation] : [train.fromStation];
+        for (const station of transferStops) {
+          markers.push({ kind: "station", coord: coordinate(station), name: station.stopName, stopId: station.stopId, trainKey: key });
+        }
+      }
+    });
+  }
+  const selected = new Set(nodes.map(({ city }) => city.cityId));
+  const place = selectedPlace && { name: selectedPlace.place.name, coord: selectedPlace.coord };
+  map.render({ markers, lines, gaps: [], catalogStations, place,
+    cities: [...cities.values()].filter(({ cityId }) => !selected.has(cityId)) });
+}
 
-async function boot() {
-  dispatch({ type: "MVP_CONTEXT_LOADING" });
+function mapPadding() {
+  const rect = panel.getBoundingClientRect();
+  return window.matchMedia("(max-width: 767px)").matches
+    ? { top: rect.bottom + 16, left: 16, right: 48, bottom: 48 }
+    : { left: rect.right + 24, top: 84, right: 80, bottom: 56 };
+}
+
+async function loadContext() {
+  status.textContent = "正在读取历史数据…";
   const response = await api.loadContext();
   if (!response.ok) {
-    dispatch({ type: "MVP_CONTEXT_ERROR", error: response.error });
-    showToast(response.error?.message ?? "数据版本不可用", { tone: "error" });
+    status.textContent = errorText(response.error);
+    status.append(" ", button("重试", loadContext));
     return;
   }
-  dispatch({ type: "MVP_CONTEXT_READY", context: response.data });
+  context = response.data;
+  const { version, coverageStart, coverageEnd } = context.dataset;
+  $("#dataset-summary").textContent = `历史回放 · ${version}`;
+  departure.value = reference.value = context.defaultReferenceServiceDate;
+  reference.min = coverageStart;
+  reference.max = coverageEnd;
+  if (context.dataset.warnings?.length) {
+    const details = $("#dataset-warnings");
+    details.hidden = false;
+    details.append(el("ul", {}, context.dataset.warnings.map((warning) => el("li", { text: warning }))));
+  }
+  status.textContent = "";
+  search.disabled = false;
+  recalculate();
+  await loadCities();
 }
 
-await boot();
-app.dataset.booted = "true";
-
-/* 验证深链（只读）：?from=NKH&to=AOH&date=2026-11-16&trip=5l000G717920
- * 走同一套 /api/mvp 接口与同一份 store，不绕过任何校验；仅用于复现与截图。 */
-async function applyDeepLink() {
-  const fromId = params.get("from");
-  const toId = params.get("to");
-  if (!fromId || !toId) return;
-  const state = getState();
-  if (state.mvp.context.status !== "ready") return;
-  const version = datasetVersion(state);
-  const date = params.get("date");
-  if (date) dispatch({ type: "MVP_DATE_SET", date });
-  const [fromResponse, toResponse] = await Promise.all([
-    api.searchStations({ datasetVersion: version, q: fromId, limit: 20 }),
-    api.searchStations({ datasetVersion: version, q: toId, limit: 20 }),
-  ]);
-  const from = fromResponse.ok
-    ? (fromResponse.data?.items ?? []).find((station) => station.stopId === fromId) ?? null
-    : null;
-  const to = toResponse.ok
-    ? (toResponse.data?.items ?? []).find((station) => station.stopId === toId) ?? null
-    : null;
-  if (from) dispatch({ type: "MVP_STATION_SELECT", side: "from", station: from });
-  if (to) dispatch({ type: "MVP_STATION_SELECT", side: "to", station: to });
-  if (!from || !to) return;
-  await actions.query();
-  const tripId = params.get("trip");
-  if (tripId) await actions.selectTrip(tripId);
+async function loadCities() {
+  const directory = await api.replayCities(context.dataset.version);
+  const notice = $("#city-directory-status");
+  if (!directory.ok) {
+    notice.textContent = "地图城市加载失败。";
+    notice.append(" ", button("重试加载城市", loadCities));
+    return;
+  }
+  notice.replaceChildren();
+  directory.data.items.sort((a, b) => b.stationCount - a.stationCount)
+    .forEach((city) => cities.set(city.cityId, city));
+  renderMap();
+  await loadMapStations();
 }
 
-await applyDeepLink();
-await mapSetup;
+async function loadMapStations() {
+  const notice = $("#city-directory-status");
+  notice.replaceChildren();
+  const directory = await api.replayStations(context.dataset.version);
+  if (!directory.ok) {
+    notice.textContent = "地图铁路站加载失败。";
+    notice.append(" ", button("重试加载铁路站", loadMapStations));
+    return;
+  }
+  catalogStations = directory.data.items;
+  renderMap();
+}
+
+toggle.addEventListener("click", () => setCollapsed(toggle.getAttribute("aria-expanded") === "true"));
+for (const input of [departure, reference, transfer]) input.addEventListener("change", recalculate);
+search.addEventListener("input", (event) => { if (!composingSearch && !event.isComposing) queueSearch(); });
+search.addEventListener("compositionstart", () => {
+  composingSearch = true;
+  clearSearchResults();
+});
+search.addEventListener("compositionend", () => {
+  composingSearch = false;
+  queueSearch();
+});
+placeSearch.addEventListener("click", findPlaces);
+function dismissSearch() {
+  search.value = "";
+  clearSearchResults();
+  search.focus();
+}
+$(".replay-search").addEventListener("keydown", (event) => {
+  if (event.defaultPrevented || event.isComposing || composingSearch || selectedPlace?.composing) return;
+  const inDetails = placeDetails.contains(event.target);
+  if (event.key === "Escape") {
+    event.preventDefault();
+    if (inDetails) $("#place-details .icon-button").click();
+    else dismissSearch();
+    return;
+  }
+  if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+  const input = inDetails ? selectedPlace.input : search;
+  if (event.target !== input && !event.target.matches(".replay-match")) return;
+  const selector = inDetails ? "#place-details .replay-match" : "#location-results .replay-match, #place-results .replay-match";
+  const matches = [...document.querySelectorAll(selector)].filter((match) => !match.disabled);
+  if (!matches.length) return;
+  const current = matches.indexOf(event.target);
+  const next = event.key === "ArrowDown" ? matches[current + 1] : matches[current === -1 ? matches.length - 1 : current - 1];
+  event.preventDefault();
+  (next ?? input).focus();
+});
+
+$(".map-tools").addEventListener("click", (event) => {
+  const action = event.target.closest("button")?.dataset.mapAction;
+  if (action === "fit") {
+    if (nodes.length) map?.fit(mapPadding());
+    else map?.fitCountry();
+  }
+  if (action === "zoom-in") map?.zoomIn();
+  if (action === "zoom-out") map?.zoomOut();
+});
+
+const mapParams = new URLSearchParams(location.search);
+function focusTrain(key) {
+  selectedTrain = key;
+  setCollapsed(false);
+  document.getElementById(`train-${key}`)?.focus();
+  renderMap();
+}
+
+initMapController({
+  container: $("#map-canvas"), sourceEl: $("#map-source"), noticeEl: $("#map-status"),
+  config, forceMode: mapParams.get("map"), simulateFailure: { failNext: mapParams.get("mapfail") === "1" },
+  callbacks: {
+    onCityClick(cityId, keyboard) {
+      addMapLocation(cities.get(cityId), null, keyboard);
+    },
+    onStationClick: chooseMapStation,
+    onHotspotClick: pickHotspot,
+    onMarkerClick: focusNode,
+    onLineClick: focusTrain,
+  },
+}).then((controller) => {
+  map = controller;
+  renderMap();
+  if (selectedPlace) map.locatePlace(mapPadding());
+});
+loadContext();

@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>RailFlow · 历史回放</title>
-  <meta name="description" content="RailFlow 同车次直达查询（历史数据回放）">
+  <meta name="description" content="RailFlow 城市铁路行程历史回放">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23145FE0'/%3E%3Cpath d='M5 17c4-1 5-4 6-7 1-3 3-4 8-3' stroke='%23fff' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="./tokens.css">
   <link rel="stylesheet" href="./app.css">
 </head>
 <body>
-  <a class="skip-link" href="#workspace-panel">跳到查询面板</a>
+  <a class="skip-link" href="#workspace-panel">跳到行程面板</a>
 
   <div class="app" id="app">
     <header class="topbar" id="topbar">
@@ -22,45 +22,41 @@
         <span class="brand-name">RailFlow</span>
       </div>
       <p class="dataset-summary" id="dataset-summary" aria-live="polite">正在读取数据版本…</p>
-      <span class="tag tag-warning" id="fixture-badge" hidden>开发夹具</span>
     </header>
 
-    <aside class="panel" id="workspace-panel" aria-label="同车次直达查询">
+    <aside class="panel" id="workspace-panel" aria-label="城市行程">
       <div class="panel-head" id="panel-head">
         <div class="panel-heading">
-          <span class="panel-heading-title">同车次直达</span>
-          <span class="tag tag-neutral">历史回放</span>
+          <h1 class="panel-heading-title">城市行程</h1>
+          <button type="button" class="button button-secondary replay-panel-toggle" id="panel-toggle" aria-controls="panel-body" aria-expanded="true">收起行程</button>
         </div>
-        <p class="panel-head-sub">选择两站与包内原始参考服务日，查看同车次直达区间与轨迹。</p>
       </div>
 
       <div class="panel-body" id="panel-body">
-        <form class="mvp-form" id="mvp-form" novalidate>
-          <div class="field">
-            <label class="field-label" for="station-input-from">出发站</label>
-            <div id="station-from"></div>
-            <p class="field-error" id="error-from" hidden></p>
-          </div>
-          <div class="field">
-            <label class="field-label" for="station-input-to">到达站</label>
-            <div id="station-to"></div>
-            <p class="field-error" id="error-to" hidden></p>
-          </div>
-          <div class="field">
-            <label class="field-label" for="service-date">参考服务日</label>
-            <input class="date-input" id="service-date" type="date" autocomplete="off">
-            <p class="field-hint">列车原始服务日；途中到发可能已是下一自然日，不做 D0/R0 偏移。</p>
-            <p class="field-error" id="error-date" hidden></p>
-          </div>
-          <button class="button button-primary query-button" id="query-button" type="submit">查询直达车次</button>
-          <p class="query-status" id="query-status" role="status" aria-live="polite"></p>
-          <div id="warnings"></div>
-        </form>
-        <div id="mvp-results"></div>
+        <div class="field replay-search">
+          <label class="field-label" for="location-search">搜索城市、铁路站或地点</label>
+          <input id="location-search" class="date-input" type="search" placeholder="输入城市、站名、站码或地点名" autocomplete="off" aria-controls="location-results place-results" disabled>
+          <p class="field-hint">点地图上可选的城市或铁路站，也可直接搜索。</p>
+          <div id="city-directory-status" role="status"></div>
+          <button class="button button-secondary" id="place-search" type="button" aria-controls="place-results" hidden>搜索高德地点</button>
+          <div class="replay-search-results" id="location-results"></div>
+          <p class="field-hint" id="place-status" role="status"></p>
+          <section id="place-details" class="replay-place-details" aria-label="地点详情" hidden></section>
+          <div class="replay-search-results" id="place-results"></div>
+        </div>
+        <div class="replay-constraints">
+          <label class="field"><span class="field-label">出发日期</span><input class="date-input" id="departure-date" type="date" required></label>
+          <label class="field"><span class="field-label">参考自然日</span><input class="date-input" id="reference-date" type="date" required></label>
+          <label class="field"><span class="field-label">最短换乘间隔（分钟）</span><input class="date-input" id="transfer-minutes" type="number" min="1" max="2147483647" step="1" required></label>
+        </div>
+        <ol class="replay-nodes" id="itinerary" aria-label="按顺序排列的城市"></ol>
+        <p class="query-status" id="query-status" role="status" aria-live="polite"></p>
+        <div id="replay-results"></div>
+        <details id="dataset-warnings" hidden><summary>数据说明</summary></details>
       </div>
     </aside>
 
-    <section class="map-region" id="map-region" aria-label="区间轨迹地图">
+    <section class="map-region" id="map-region" aria-label="城市与铁路轨迹地图">
       <div class="map-canvas" id="map-canvas"></div>
       <p class="map-notice" id="map-status" role="status" hidden></p>
       <div class="map-tools" role="group" aria-label="地图工具">
@@ -77,10 +73,9 @@
       <div class="map-source" id="map-source" aria-live="polite"></div>
     </section>
 
-    <div id="toast-root" class="toast-root" role="status" aria-live="polite" aria-atomic="false"></div>
-    <div id="dev-root" class="dev-root" hidden></div>
   </div>
 
+  <div id="modal-root"></div>
   <noscript><p class="noscript">需要启用 JavaScript 才能使用 RailFlow。</p></noscript>
   <script type="module" src="./app.js"></script>
 </body>

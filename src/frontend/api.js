@@ -24,6 +24,12 @@ export const ERROR_MESSAGES = {
   PLAN_VERSION_CONFLICT: "行程已在其他窗口更新",
   VALIDATION_FAILED: "请求参数不完整或格式不正确",
   UPSTREAM_QUOTA: "地点服务暂不可用",
+  PLACE_SEARCH_NOT_CONFIGURED: "普通地点搜索尚未配置",
+  PLACE_SEARCH_PERMISSION_DENIED: "高德地点查询权限不足",
+  PLACE_SEARCH_QUOTA_EXCEEDED: "高德地点查询额度已用尽或受限",
+  PLACE_SEARCH_RATE_LIMITED: "地点搜索过于频繁，请稍后重试",
+  PLACE_SEARCH_TIMEOUT: "高德地点查询超时，请重试",
+  PLACE_SEARCH_UNAVAILABLE: "高德地点搜索暂不可用",
   NETWORK_OFFLINE: "网络不可用，请检查本地服务是否已启动",
   REQUEST_TIMEOUT: "请求超时",
   RESULT_UNKNOWN: "正在核对保存结果",
@@ -148,12 +154,12 @@ const FIXTURE_STOPS = [
   fixtureStop("AOH", 3, "07:49:00", "07:49:00", 28140, 28140, 0),
 ];
 
-export function createApi() {
+export function createApi({ live = false } = {}) {
   const apiBase = config.apiBase ?? "";
   const explicitMode = config.dataMode === "fixture" || config.dataMode === "live" ? config.dataMode : null;
   const devFixture = new URLSearchParams(location.search).get("dev") === "1";
   // ?dev=1 是显式的开发夹具开关，必须优先于配置的默认 live；真实模式仍是缺省。
-  const mode = devFixture ? "fixture" : (explicitMode ?? "live");
+  const mode = live ? "live" : devFixture ? "fixture" : (explicitMode ?? "live");
   const synthetic = mode === "fixture";
   let scenarioKey = "complete";
 
@@ -169,6 +175,7 @@ export function createApi() {
   async function request(path, options = {}) {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort("timeout"), options.timeoutMs ?? 10000);
+    const signal = options.signal ? AbortSignal.any([controller.signal, options.signal]) : controller.signal;
     try {
       const response = await fetch(`${apiBase}${path}`, {
         method: options.method ?? "GET",
@@ -179,7 +186,7 @@ export function createApi() {
         },
         body: options.body ? JSON.stringify(options.body) : undefined,
         credentials: "same-origin",
-        signal: controller.signal,
+        signal,
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
@@ -194,7 +201,7 @@ export function createApi() {
       if (error && typeof error === "object" && "httpStatus" in error) {
         return { ok: false, error: normalizeError(error), offline: false };
       }
-      if (controller.signal.aborted) {
+      if (signal.aborted) {
         return { ok: false, error: normalizeError({ code: "REQUEST_TIMEOUT" }), offline: false };
       }
       return { ok: false, error: normalizeError({ code: "NETWORK_OFFLINE" }), offline: true };
@@ -299,7 +306,7 @@ export function createApi() {
 
   async function loadGeometry({
     datasetVersion, tripId, referenceServiceDate, fromStopId, toStopId, boardSequence, alightSequence,
-  }) {
+  }, signal) {
     if (synthetic) {
       await sleep(180);
       return {
@@ -338,7 +345,7 @@ export function createApi() {
       boardSequence: String(boardSequence),
       alightSequence: String(alightSequence),
     });
-    return request(`/api/mvp/trips/${encodeURIComponent(tripId)}/geometry?${params.toString()}`);
+    return request(`/api/mvp/trips/${encodeURIComponent(tripId)}/geometry?${params.toString()}`, { signal });
   }
 
   /* ---------- 旧多城市/规划/AI 适配器（后置功能，页面不再挂载） ---------- */
@@ -443,6 +450,12 @@ export function createApi() {
     searchTrips,
     loadTripStops,
     loadGeometry,
+    replayCities: (datasetVersion) => request(`/api/replay/cities?${new URLSearchParams({ datasetVersion })}`),
+    replayStations: (datasetVersion) => request(`/api/replay/stations?${new URLSearchParams({ datasetVersion })}`),
+    replayCity: (datasetVersion, cityId) => request(`/api/replay/cities/${encodeURIComponent(cityId)}?${new URLSearchParams({ datasetVersion })}`),
+    replayLocations: (datasetVersion, q, offset, signal) => request(`/api/replay/locations?${new URLSearchParams({ datasetVersion, q, offset, limit: 10 })}`, { signal }),
+    searchAmapPlaces: (q, signal) => request(`/api/places?${new URLSearchParams({ q })}`, { signal }),
+    replayPlan: (body, signal) => request("/api/replay/plans", { method: "POST", body, signal }),
     // 后置功能保留的旧入口（页面不再挂载）
     loadDataset,
     searchPlaces,
