@@ -46,17 +46,21 @@ public class AiIntentService {
             仅明确要求更换历史参考日时填写 referenceDate，单独提及出发日期不能填参考日。
             minimumTransferMinutes 是用户明确的最短换乘分钟数，偏好是短字符串，例如“慢节奏铁路出行”，
             不把“慢摇”转换成车型、席别或换乘约束。明确取消偏好用空字符串，无修改用 null。
-            中间停靠变更填 stops 数组，条目格式 {"place":"郑州","action":"STOP","stayDays":null}。
+            中间停靠变更填 stops 数组，字段为 place、action、stayDays、position、relativeTo。
             动作为 STOP（加停或修改停留天数）、REMOVE（移除中间节点）、PASS（仅经过）、TRANSFER（指定换乘）、
             UNCLEAR（只说途经或经由，需问经过、换乘或停留）、CLEAR（撤销待补条件，保留已有行程节点）。
             stayDays 仅在 STOP 且用户说出天数时填正整数。
+            STOP 或 UNCLEAR 若用户指定在另一个节点之前或之后，必须填写 position（BEFORE 或 AFTER）及 relativeTo（参照点名称或站码）。
+            例如“在济南之前加停天津一天”输出 {"place":"天津","action":"STOP","stayDays":1,"position":"BEFORE","relativeTo":"济南"}。
+            有前后要求但没说参照点时保留 position，relativeTo 填 null。没有位置要求时两字段均填 null。
             用户补答“下车停一天”等表达时，使用 context.pendingStops 中对应的地点，并输出新的 action。
+            补答位置时使用 pendingStops 中尚待处理的停留地点及天数，只更新用户补充的参照点或前后方向。
             更正待补地点时先对原地点输出 CLEAR，再对新地点输出变更；明确跳过待补条件用 CLEAR。
             无关且无可提取的请求所有字段用 null，stops 用空数组。不要输出路线、车次、票价、坐标、自由文本或其他字段。
             """;
     private static final Set<String> FIELDS = Set.of("origin", "destination", "region", "suggestedCity", "departureDate",
             "departureOffsetDays", "referenceDate", "minimumTransferMinutes", "preference", "stops");
-    private static final Set<String> STOP_FIELDS = Set.of("place", "action", "stayDays");
+    private static final Set<String> STOP_FIELDS = Set.of("place", "action", "stayDays", "position", "relativeTo");
     private static final Set<String> ACTIONS = Set.of("STOP", "REMOVE", "PASS", "TRANSFER", "UNCLEAR", "CLEAR");
 
     private final String key;
@@ -169,10 +173,15 @@ public class AiIntentService {
                 String place = text(stop, "place", 64, false);
                 String action = text(stop, "action", 12, false);
                 Integer stay = integer(stop, "stayDays", 1, Integer.MAX_VALUE);
+                String position = text(stop, "position", 6, false);
+                String relativeTo = text(stop, "relativeTo", 64, false);
                 if (place == null || action == null || !ACTIONS.contains(action) || (stay != null && !"STOP".equals(action))) {
                     throw invalid();
                 }
-                stops.add(new Stop(place, action, stay));
+                if (position == null ? relativeTo != null
+                        : (!"BEFORE".equals(position) && !"AFTER".equals(position))
+                        || (!"STOP".equals(action) && !"UNCLEAR".equals(action))) throw invalid();
+                stops.add(new Stop(place, action, stay, position, relativeTo));
             }
             return new Intent(origin, destination, region, suggestion, departure, date(data, "referenceDate"),
                     integer(data, "minimumTransferMinutes", 1, Integer.MAX_VALUE),
@@ -222,5 +231,5 @@ public class AiIntentService {
     public record Intent(String origin, String destination, String region, String suggestedCity, LocalDate departureDate,
                          LocalDate referenceDate, Integer minimumTransferMinutes, String preference, List<Stop> stops) {}
 
-    public record Stop(String place, String action, Integer stayDays) {}
+    public record Stop(String place, String action, Integer stayDays, String position, String relativeTo) {}
 }

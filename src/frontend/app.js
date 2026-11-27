@@ -3,6 +3,7 @@ import config from "./config.js";
 import { createApi, errorText } from "./api.js";
 import { gcj02ToWgs84, initMapController } from "./map.js";
 import { closeModal, el, ICONS, openModal } from "./ui.js";
+import { mergeIntent, mergeManualStops, questions } from "./ai-itinerary.js";
 
 const $ = (selector) => document.querySelector(selector);
 const api = createApi({ live: true });
@@ -20,6 +21,10 @@ const departure = $("#departure-date");
 const reference = $("#reference-date");
 const transfer = $("#transfer-minutes");
 const toggle = $("#panel-toggle");
+const aiInput = $("#ai-input");
+const aiSend = $("#ai-send");
+const aiStatus = $("#ai-status");
+const aiLog = $("#ai-log");
 const nodes = [];
 const stationLists = new Map();
 const stations = new Map();
@@ -37,6 +42,13 @@ let selectedPlace;
 let searchTimer;
 let composingSearch = false;
 let selectedTrain;
+let aiRequest;
+let aiDraft;
+let aiPreference;
+let appliedSuggestion;
+let routeVersion = 0;
+let departureEdited = false;
+let lastUnanswered;
 
 const coordinate = ({ longitude, latitude }) => [longitude, latitude];
 const cityLabel = ({ name, administration }) => name === administration ? name : `${name} · ${administration}`;
@@ -69,26 +81,36 @@ function focusCard(card, control) {
 }
 
 function focusNode(nodeId, control) {
-  setCollapsed(false);
+  showTab("route");
   focusCard(document.getElementById(`visit-${nodeId}`), control);
 }
 
-function editNodes(focusId, control) {
+function editNodes(previous, focusId, control) {
+  const current = currentAiDraft();
+  const patch = aiDraft ? mergeManualStops(aiDraft, previous, nodes) : {};
+  if (previous[0] !== nodes[0]) patch.origin = current.origin;
+  if ((previous.length > 1 ? previous.at(-1) : null) !== current.destination) {
+    patch.destination = current.destination;
+    patch.suggestion = current.suggestion;
+  }
+  invalidateAi(patch);
   renderNodes();
   recalculate();
   if (focusId) focusNode(focusId, control);
 }
 
 function addCity(city, station) {
+  const previous = [...nodes];
   const node = { id: nextNodeId++, city, arrivalStopId: station?.stopId, departureStopId: station?.stopId };
   nodes.push(node);
   if (station) stations.set(station.stopId, station);
-  editNodes();
+  editNodes(previous);
   if (!stationLists.has(city.cityId)) loadStations(city.cityId);
 }
 
 function mapFocusTarget() {
-  return panel.dataset.compact === "true" ? toggle : search;
+  if (panel.dataset.compact === "true") return toggle;
+  return $("#route-panel").hidden ? $("#ai-tab") : search;
 }
 
 function addMapLocation(city, station, keyboard) {
@@ -151,6 +173,7 @@ function stationSelect(node, field, title, options) {
     attrs: { "aria-label": `${node.city.name}${title}`, disabled: !options, "data-control": field },
     on: { change: ({ target }) => {
       node[field] = target.value || undefined;
+      editAiNode(node, field);
       recalculate();
     } },
   }, el("option", { text: "自动选站", attrs: { value: "" } }));
@@ -171,10 +194,11 @@ function renderNodes() {
     const role = first ? "起点" : last ? "终点" : "停留";
     const entry = stationLists.get(node.city.cityId);
     const move = (offset, action) => {
+      const previous = [...nodes];
       const neighbor = nodes[index + offset];
       nodes[index + offset] = node;
       nodes[index] = neighbor;
-      editNodes(node.id, action);
+      editNodes(previous, node.id, action);
     };
     const actionButton = (icon, title, action, disabled) => el("button", {
       class: "icon-button", html: ICONS[icon],
@@ -188,8 +212,9 @@ function renderNodes() {
           actionButton("arrowUp", "上移", () => move(-1, "arrowUp"), first),
           actionButton("arrowDown", "下移", () => move(1, "arrowDown"), last),
           actionButton("trash", "移除", () => {
+            const previous = [...nodes];
             nodes.splice(index, 1);
-            editNodes((nodes[index] ?? nodes.at(-1))?.id, "trash");
+            editNodes(previous, (nodes[index] ?? nodes.at(-1))?.id, "trash");
             if (!nodes.length) search.focus();
           }))),
       el("div", { class: "replay-node-stations" },
@@ -199,10 +224,10 @@ function renderNodes() {
       const stay = el("input", {
         class: "date-input", attrs: { type: "number", min: 1, max: 2147483647, step: 1, required: true,
           value: node.stayDays ?? 1, "aria-label": `${node.city.name}停留天数`, "data-control": "stay" },
-        on: { change: ({ target }) => {
+        on: { input: ({ target }) => {
           node.stayDays = target.valueAsNumber;
-          recalculate();
-        } },
+          editAiNode(node, "stayDays");
+        }, change: () => recalculate() },
       });
       card.querySelector(".replay-node-stations").append(
         el("label", { class: "field" }, el("span", { class: "field-label", text: "停留天数" }), stay));
@@ -427,7 +452,17 @@ async function findPlaces() {
     })));
 }
 
-async function recalculate() {
+function planBody(orderedNodes, departureDate, referenceDate, minimumTransferMinutes) {
+  return {
+    datasetVersion: context.dataset.version, departureDate, referenceDate, minimumTransferMinutes,
+    nodes: orderedNodes.map(({ city, arrivalStopId, departureStopId, stayDays }, index) => ({
+      cityId: city.cityId, arrivalStopId, departureStopId,
+      stayDays: index > 0 && index < orderedNodes.length - 1 ? stayDays : undefined,
+    })),
+  };
+}
+
+async function recalculate(verifiedPlan) {
   planRequest?.abort();
   plan = undefined;
   geometry = new Map();
@@ -454,20 +489,12 @@ async function recalculate() {
   const request = new AbortController();
   planRequest = request;
   status.textContent = "正在计算行程…";
-  const response = await api.replayPlan({
-    datasetVersion: context.dataset.version,
-    departureDate: departure.value,
-    referenceDate: reference.value,
-    minimumTransferMinutes: transfer.valueAsNumber,
-    nodes: nodes.map(({ city, arrivalStopId, departureStopId, stayDays }, index) => ({
-      cityId: city.cityId, arrivalStopId, departureStopId,
-      stayDays: index > 0 && index < nodes.length - 1 ? stayDays : undefined,
-    })),
-  }, request.signal);
+  const response = verifiedPlan ? { ok: true, data: verifiedPlan }
+    : await api.replayPlan(planBody(nodes, departure.value, reference.value, transfer.valueAsNumber), request.signal);
   if (request.signal.aborted) return;
   if (!response.ok) {
     status.textContent = errorText(response.error);
-    status.append(" ", button("重试", recalculate));
+    status.append(" ", button("重试", () => recalculate()));
     return;
   }
   plan = response.data;
@@ -497,6 +524,238 @@ function renderGeometryStatuses() {
       ? shape.accuracy === "APPROXIMATE" ? "铁路轨迹（近似截取）" : "铁路轨迹可用"
       : shape.status === "ERROR" ? `轨迹加载失败（${errorText(shape.error)}）`
         : `铁路轨迹缺失${geometryReasons[shape.reason] ? `（${geometryReasons[shape.reason]}）` : ""}`;
+  }
+}
+
+function showTab(name, focus = false) {
+  setCollapsed(false);
+  for (const tab of [$("#route-tab"), $("#ai-tab")]) {
+    const active = tab.id === `${name}-tab`;
+    tab.setAttribute("aria-selected", String(active));
+    tab.tabIndex = active ? 0 : -1;
+    $(`#${tab.getAttribute("aria-controls")}`).hidden = !active;
+    if (active && focus) tab.focus();
+  }
+}
+
+function syncAiInput() {
+  aiSend.disabled = !catalogStations.length || Boolean(aiRequest) || !aiInput.value.trim();
+}
+
+function editAiNode(node, field) {
+  const update = (candidate) => ({ ...candidate, [field]: node[field] });
+  let changes;
+  if (aiDraft) {
+    if (node === nodes[0]) {
+      changes = { origin: update(aiDraft.origin?.id === node.id ? aiDraft.origin : node) };
+    } else if (node === nodes.at(-1)) {
+      changes = { destination: update(aiDraft.destination?.id === node.id ? aiDraft.destination : node),
+        suggestion: currentAiDraft().suggestion };
+    } else {
+      changes = { stops: aiDraft.stops.map((candidate) => candidate.id === node.id ? update(candidate) : candidate) };
+    }
+  }
+  invalidateAi(changes);
+}
+
+function invalidateAi(changes) {
+  routeVersion++;
+  for (const control of aiLog.querySelectorAll("[data-ai-route]")) control.remove();
+  if (aiDraft && changes) {
+    const unresolved = { ...aiDraft.unresolved };
+    for (const end of ["origin", "destination"]) {
+      if (end in changes) delete unresolved[end];
+    }
+    aiDraft = { ...aiDraft, ...changes, unresolved };
+    if ("suggestion" in changes) {
+      for (const control of aiLog.querySelectorAll("[data-ai-suggestion]")) control.remove();
+    }
+  }
+  if (aiRequest) {
+    aiRequest.abort();
+    aiRequest = undefined;
+    aiStatus.textContent = "行程已手动修改。可基于当前行程重新发送。";
+  } else {
+    aiStatus.textContent = "";
+  }
+  syncAiInput();
+  renderAiSummary();
+}
+
+function clearAiPlanActions() {
+  for (const control of aiLog.querySelectorAll("[data-ai-route], [data-ai-suggestion]")) control.remove();
+}
+
+function currentAiDraft() {
+  const chosenDate = (departureEdited || nodes.length > 1) && departure.validity.valid ? departure.value : null;
+  const destination = nodes.length > 1 ? nodes.at(-1) : null;
+  return {
+    origin: nodes[0], destination, stops: nodes.slice(1, -1), pendingStops: [], unresolved: {},
+    departureDate: chosenDate, referenceDate: reference.validity.valid ? reference.value : null,
+    minimumTransferMinutes: transfer.validity.valid ? transfer.valueAsNumber : null,
+    preference: aiPreference,
+    suggestion: destination === appliedSuggestion?.node ? appliedSuggestion : null,
+  };
+}
+
+function describeAiNode(node) {
+  if (!node) return null;
+  const codes = [node.arrivalStopId, node.departureStopId].filter(Boolean);
+  const labels = [...new Set(codes)].map((code) => stations.get(code)?.stopName ?? code);
+  return `${node.city.name}${labels.length ? `（${labels.join("、")}）` : ""}`;
+}
+
+function renderAiSummary() {
+  const draft = aiDraft ?? currentAiDraft();
+  const summary = $("#ai-summary");
+  const route = [describeAiNode(draft.origin), ...draft.stops.map((node) =>
+    `${describeAiNode(node)}停留 ${node.stayDays ?? 1} 天`), describeAiNode(draft.destination)].filter(Boolean).join(" → ");
+  const labels = [route, draft.departureDate && `出发 ${draft.departureDate}`,
+    draft.departureDate && draft.referenceDate && `历史参考日 ${draft.referenceDate}`,
+    draft.minimumTransferMinutes && `最短换乘 ${draft.minimumTransferMinutes} 分钟`,
+    draft.preference && `偏好 ${draft.preference}`,
+    draft.suggestion?.node && `建议目的城市 ${draft.suggestion.node.city.name}`].filter(Boolean);
+  summary.hidden = !labels.length;
+  summary.querySelector("summary").textContent = aiDraft ? "待规划条件" : "已知行程条件";
+  summary.querySelector("p").textContent = labels.join(" · ");
+}
+
+function resolveAiPlace(value, cityOnly = false) {
+  const cityName = (name) => name.replace(/(?:市|地区|盟)$/, "");
+  const cityMatches = [...cities.values()].filter(({ name }) => cityName(name) === cityName(value));
+  if (cityOnly) return cityMatches.length === 1 ? { city: cityMatches[0] } : null;
+  const codeMatches = catalogStations.filter(({ station }) => station.stopId === value.toUpperCase());
+  const stationMatches = codeMatches.length ? codeMatches : catalogStations.filter(({ station }) =>
+    stripStationSuffix(station.stopName) === stripStationSuffix(value));
+  const useStation = codeMatches.length || value.endsWith("站") || !cityMatches.length;
+  if (!useStation && cityMatches.length === 1) return { city: cityMatches[0] };
+  if (!useStation || stationMatches.length !== 1) return null;
+  const { cityId, station } = stationMatches[0];
+  const city = cities.get(cityId);
+  if (!city) return null;
+  stations.set(station.stopId, station);
+  return { city, arrivalStopId: station.stopId, departureStopId: station.stopId };
+}
+
+function addAiMessage(role, text, action) {
+  const entry = el("div", { class: "ai-message", dataset: { role } },
+    el("div", { class: "ai-bubble", text }), action);
+  aiLog.append(entry);
+  aiLog.scrollTop = aiLog.scrollHeight;
+}
+
+async function previewAiDraft(draft, signal) {
+  const { coverageStart, coverageEnd } = context.dataset;
+  const missing = questions(draft, coverageStart, coverageEnd);
+  const suggested = draft.suggestion?.node;
+  const suggestionText = suggested ? `建议以${suggested.city.name}为目的城市，可更换。` : "";
+  if (missing.length) {
+    for (const control of aiLog.querySelectorAll("[data-ai-suggestion]")) control.remove();
+    aiDraft = draft;
+    const choose = suggested && !draft.suggestion.applied && button(`采用${suggested.city.name}`, () => {
+      if (aiDraft?.suggestion !== draft.suggestion || aiRequest) return;
+      runAi(null, { ...aiDraft, destination: suggested, suggestion: { ...draft.suggestion, applied: true } });
+    }, { "data-ai-suggestion": "" });
+    addAiMessage("assistant", [suggestionText, ...missing].join("\n"), choose);
+    return;
+  }
+
+  const ordered = [draft.origin, ...draft.stops, draft.destination];
+  aiStatus.textContent = "正在匹配历史铁路行程…";
+  const body = planBody(ordered, draft.departureDate, draft.referenceDate, draft.minimumTransferMinutes);
+  const response = await api.replayPlan(body, signal);
+  if (signal.aborted) return;
+  if (!response.ok || !response.data) throw new Error(errorText(response.error));
+  const verified = response.data;
+  if (!Array.isArray(verified.legs) || (!verified.emptyReason &&
+      (verified.legs.length !== ordered.length - 1 || verified.legs.some((leg) => !leg.trains?.length)))) {
+    throw new Error("历史规划未返回完整的铁路行程，请重试。");
+  }
+  if (verified.emptyReason) {
+    for (const control of aiLog.querySelectorAll("[data-ai-suggestion]")) control.remove();
+    aiDraft = draft;
+    const index = verified.failedLegIndex;
+    const failed = Number.isInteger(index) && ordered[index] && ordered[index + 1]
+      ? `${ordered[index].city.name} → ${ordered[index + 1].city.name} ` : "";
+    const reason = verified.emptyReason === "DATE_OUTSIDE_COVERAGE" ? "续程超出历史数据日期范围" : "未找到可行车次";
+    throw new Error(`${suggestionText}${failed}${reason}。可调整日期、车站或路线。`);
+  }
+
+  nodes.splice(0, nodes.length, ...ordered.map((node) => node.id ? node : { ...node, id: nextNodeId++ }));
+  aiPreference = draft.preference;
+  appliedSuggestion = draft.suggestion && { ...draft.suggestion, node: nodes.at(-1) };
+  aiDraft = undefined;
+  departureEdited = true;
+  departure.value = body.departureDate;
+  reference.value = body.referenceDate;
+  transfer.value = body.minimumTransferMinutes;
+  routeVersion++;
+  clearAiPlanActions();
+  renderNodes();
+  recalculate(verified);
+  for (const { city } of nodes) if (!stationLists.has(city.cityId)) loadStations(city.cityId);
+  const trains = verified.legs.flatMap((leg) => leg.trains);
+  const labels = trains.map(({ trip }) => trip.trainName).join("、");
+  const first = trains[0];
+  const last = trains.at(-1);
+  const text = `${suggestionText}已按 ${verified.datasetVersion} 回放 ${labels}。${clock(first.departureDateTime)} 从${first.trip.from.stopName}出发，${clock(last.arrivalDateTime)} 抵达${last.trip.to.stopName}。轨迹状态见路线，历史票价未知。`;
+  addAiMessage("assistant", text, button("查看路线", () => {
+    showTab("route", true);
+  }, { "data-ai-route": "" }));
+}
+
+async function runAi(message, acceptedDraft) {
+  if (aiRequest || !catalogStations.length || (!message && !acceptedDraft)) return;
+  const request = new AbortController();
+  aiRequest = request;
+  const { signal } = request;
+  const version = routeVersion;
+  const inputValue = aiInput.value;
+  aiStatus.textContent = "AI 正在理解行程…";
+  syncAiInput();
+  if (message && lastUnanswered !== message) addAiMessage("user", message);
+  if (message) lastUnanswered = message;
+  let draft = acceptedDraft;
+  try {
+    if (!draft) {
+      const known = aiDraft ?? currentAiDraft();
+      const response = await api.aiIntent({ message, context: {
+        origin: describeAiNode(known.origin), destination: describeAiNode(known.destination),
+        stops: known.stops.map((node) => ({ place: describeAiNode(node), stayDays: node.stayDays ?? 1 })),
+        departureDate: known.departureDate, referenceDate: known.referenceDate,
+        minimumTransferMinutes: known.minimumTransferMinutes, preference: known.preference,
+        pendingStops: known.pendingStops.map(({ place, action, stayDays, position, relativeTo }) =>
+          ({ place, action, stayDays, position, relativeTo })),
+        pendingPlaces: known.unresolved, region: known.suggestion?.region,
+      } }, signal);
+      if (signal.aborted || version !== routeVersion) return;
+      if (!response.ok || !response.data) throw new Error(errorText(response.error));
+      const changed = Object.values(response.data).some((value) => Array.isArray(value) ? value.length : value != null);
+      if (changed || questions(known, context.dataset.coverageStart, context.dataset.coverageEnd).length) {
+        draft = mergeIntent(known, response.data, resolveAiPlace);
+      } else {
+        addAiMessage("assistant", "可以告诉我想改的目的地、出发日期或停留城市。");
+      }
+    }
+    if (draft) await previewAiDraft(draft, signal);
+    if (signal.aborted) return;
+    if (message && aiInput.value === inputValue) aiInput.value = "";
+    lastUnanswered = undefined;
+    aiStatus.textContent = "";
+    renderAiSummary();
+  } catch (error) {
+    if (signal.aborted) return;
+    aiStatus.textContent = error.message;
+    aiStatus.append(" ", button("重试", () => {
+      const edited = aiInput.value.trim();
+      if (message && edited && edited !== message) runAi(edited);
+      else runAi(message, aiDraft === draft ? draft : acceptedDraft);
+    }), " ",
+      button("手动编辑", () => showTab("route", true)));
+    renderAiSummary();
+  } finally {
+    if (aiRequest === request) aiRequest = undefined;
+    syncAiInput();
   }
 }
 
@@ -639,11 +898,32 @@ async function loadMapStations() {
     return;
   }
   catalogStations = directory.data.items;
+  syncAiInput();
   renderMap();
 }
 
 toggle.addEventListener("click", () => setCollapsed(toggle.getAttribute("aria-expanded") === "true"));
-for (const input of [departure, reference, transfer]) input.addEventListener("change", recalculate);
+for (const name of ["route", "ai"]) {
+  const tab = $(`#${name}-tab`);
+  tab.addEventListener("click", () => showTab(name));
+  tab.addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    showTab(event.key === "Home" ? "route" : event.key === "End" ? "ai" : name === "ai" ? "route" : "ai", true);
+  });
+}
+aiInput.addEventListener("input", syncAiInput);
+$("#ai-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  runAi(aiInput.value.trim());
+});
+for (const [input, field] of [[departure, "departureDate"], [reference, "referenceDate"], [transfer, "minimumTransferMinutes"]]) {
+  input.addEventListener("input", () => {
+    if (input === departure) departureEdited = true;
+    invalidateAi({ [field]: currentAiDraft()[field] });
+  });
+  input.addEventListener("change", () => recalculate());
+}
 search.addEventListener("input", (event) => { if (!composingSearch && !event.isComposing) queueSearch(); });
 search.addEventListener("compositionstart", () => {
   composingSearch = true;
@@ -693,7 +973,7 @@ $(".map-tools").addEventListener("click", (event) => {
 const mapParams = new URLSearchParams(location.search);
 function focusTrain(key) {
   selectedTrain = key;
-  setCollapsed(false);
+  showTab("route");
   document.getElementById(`train-${key}`)?.focus();
   renderMap();
 }

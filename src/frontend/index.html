@@ -30,9 +30,14 @@
           <h1 class="panel-heading-title">城市行程</h1>
           <button type="button" class="button button-secondary replay-panel-toggle" id="panel-toggle" aria-controls="panel-body" aria-expanded="true">收起行程</button>
         </div>
+        <div class="panel-tabs" role="tablist" aria-label="行程工作面板">
+          <button class="panel-tab" type="button" id="route-tab" role="tab" aria-controls="route-panel" aria-selected="true">路线</button>
+          <button class="panel-tab" type="button" id="ai-tab" role="tab" aria-controls="ai-panel" aria-selected="false" tabindex="-1">AI 助手</button>
+        </div>
       </div>
 
       <div class="panel-body" id="panel-body">
+        <div id="route-panel" role="tabpanel" aria-labelledby="route-tab">
         <div class="field replay-search">
           <label class="field-label" for="location-search">搜索城市、铁路站或地点</label>
           <input id="location-search" class="date-input" type="search" placeholder="输入城市、站名、站码或地点名" autocomplete="off" aria-controls="location-results place-results" disabled>
@@ -53,6 +58,18 @@
         <p class="query-status" id="query-status" role="status" aria-live="polite"></p>
         <div id="replay-results"></div>
         <details id="dataset-warnings" hidden><summary>数据说明</summary></details>
+        </div>
+        <section id="ai-panel" class="ai-panel" role="tabpanel" aria-labelledby="ai-tab" hidden>
+          <details id="ai-summary" hidden><summary>已知行程条件</summary><p></p></details>
+          <div id="ai-log" class="ai-log" role="log" aria-label="AI 助手对话" aria-relevant="additions text"></div>
+          <form id="ai-form" class="ai-input-area">
+            <p id="ai-status" class="field-hint" role="status"></p>
+            <div class="ai-input-row">
+              <textarea id="ai-input" class="ai-input" rows="1" maxlength="1000" aria-label="想去哪里？" placeholder="想去哪里？" required></textarea>
+              <button id="ai-send" class="button button-primary ai-send" type="submit" disabled>发送</button>
+            </div>
+          </form>
+        </section>
       </div>
     </aside>
 

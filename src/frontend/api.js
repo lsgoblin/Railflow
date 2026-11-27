@@ -35,7 +35,12 @@ export const ERROR_MESSAGES = {
   RESULT_UNKNOWN: "正在核对保存结果",
   HISTORICAL_DATA_UNAVAILABLE: "历史数据暂不可用",
   GEOMETRY_UNAVAILABLE: "铁路轨迹暂不可用",
-  AI_UNAVAILABLE: "AI 服务未接入",
+  AI_NOT_CONFIGURED: "AI 助手尚未配置",
+  AI_LOCAL_ONLY: "AI 助手当前仅供本机访问",
+  AI_BUSY: "AI 助手正在处理其他请求，请稍后重试",
+  AI_TIMEOUT: "AI 请求超时，请重试",
+  AI_INVALID_RESPONSE: "AI 未返回完整有效的行程条件，请重试",
+  AI_UNAVAILABLE: "AI 服务暂不可用",
   UNKNOWN_ERROR: "暂时无法完成，请重试",
   // MVP 只读接口（docs/design/mvp-contract.md §8）
   SAME_STATION: "出发站与到达站相同，请重新选择",
@@ -456,6 +461,7 @@ export function createApi({ live = false } = {}) {
     replayLocations: (datasetVersion, q, offset, signal) => request(`/api/replay/locations?${new URLSearchParams({ datasetVersion, q, offset, limit: 10 })}`, { signal }),
     searchAmapPlaces: (q, signal) => request(`/api/places?${new URLSearchParams({ q })}`, { signal }),
     replayPlan: (body, signal) => request("/api/replay/plans", { method: "POST", body, signal }),
+    aiIntent: (body, signal) => request("/api/ai/intent", { method: "POST", body, signal, timeoutMs: 24000 }),
     // 后置功能保留的旧入口（页面不再挂载）
     loadDataset,
     searchPlaces,

@@ -13,9 +13,13 @@
 | `departureDate`、`referenceDate` | `YYYY-MM-DD`。相对出发日由服务端按 `UTC+08:00` 的自然日解析。`referenceDate` 仅在本轮明确调整历史参考日时返回。 |
 | `minimumTransferMinutes` | 本轮给出的正整数分钟数。 |
 | `preference` | 本轮提出的会话偏好。空字符串表示撤销。偏好可回显和纠正，车次仍按历史规划的既有规则匹配。 |
-| `stops[]` | 条目含 `place`、`action` 和可空的 `stayDays`。`STOP` 添加停留或修改天数，`REMOVE` 移除中间节点，`CLEAR` 撤销待补条件。`UNCLEAR` 补问经过、换乘或下车停留。`PASS` 与 `TRANSFER` 表示待规划能力支持的条件，当前提示调整。 |
+| `stops[]` | 条目含 `place`、`action` 和可空的 `stayDays`、`position`、`relativeTo`。`STOP` 添加停留或修改天数，`REMOVE` 移除中间节点，`CLEAR` 撤销待补条件。`UNCLEAR` 补问经过、换乘或下车停留。`PASS` 与 `TRANSFER` 表示待规划能力支持的条件，当前提示调整。 |
+
+`STOP` 或 `UNCLEAR` 可通过 `position` 指定 `BEFORE` 或 `AFTER`。`relativeTo` 是参照节点名称或站码。明确要求前后顺序但参照点缺失、无效或有多个匹配时，保留当前行程并补问。两字段缺省时沿用普通停留的处理方式。
 
 标量为 `null` 或停留数组为空时沿用已有条件。客户端使用固定版目录解析地点。条件满足时调用 `/api/replay/plans`，完整匹配后更新共用行程并获取区间轨迹。未匹配、含糊地点和失败响应保留此前行程。更新出发日时沿用已建立的回放锚点。首次从空行程生成时使用当前界面显示的历史参考日，允许用户明确修改。
+
+手动补填单项条件时，未修改的会话条件继续参与规划，在途的旧响应作废。规划无可行车次时保留可编辑输入，说明失败区间并提供重试和手动编辑入口。
 
 ## 访问与失败
 

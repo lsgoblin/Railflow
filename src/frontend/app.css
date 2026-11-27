@@ -2945,6 +2945,12 @@ body.modal-open {
 .replay-train { padding-left: var(--space-2); border-left: 2px solid var(--color-border); }
 .replay-panel-toggle { white-space: nowrap; }
 #workspace-panel .panel-body { padding: var(--space-4); }
+#ai-panel { min-height: 100%; height: auto; }
+#ai-summary p { margin: var(--space-2) 0; overflow-wrap: anywhere; }
+#ai-log { min-height: 3rem; max-height: 32vh; padding-inline: 0; }
+#ai-log .ai-bubble { white-space: pre-wrap; }
+#ai-form { padding-inline: 0; padding-bottom: 0; margin-top: auto; }
+#ai-status:empty { display: none; }
 #workspace-panel[data-compact="true"] { bottom: auto; }
 #workspace-panel [hidden],
 #city-directory-status:empty,

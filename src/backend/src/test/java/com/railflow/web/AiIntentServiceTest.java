@@ -51,7 +51,7 @@ class AiIntentServiceTest {
         assertEquals("北京南站", result.origin());
         assertEquals("哈尔滨", result.destination());
         assertEquals("慢节奏铁路出行", result.preference());
-        assertEquals(List.of(new AiIntentService.Stop("沈阳", "STOP", 2)), result.stops());
+        assertEquals(List.of(new AiIntentService.Stop("沈阳", "STOP", 2, null, null)), result.stops());
         assertEquals("json_object", request.get().path("response_format").path("type").textValue());
     }
 
@@ -59,11 +59,26 @@ class AiIntentServiceTest {
     @ValueSource(strings = {"   ", "{\"origin\":", "{\"departureOffsetDays\":\"0\"}",
             "{\"stops\":[{\"place\":\"沈阳\",\"action\":\"PASS\",\"stayDays\":1}]}",
             "{\"departureDate\":\"2026-02-30\"}", "{\"origin\":\"北京\"} {}",
-            "{\"origin\":\"北京\",\"origin\":\"上海\"}", "{\"destination\":\"北京\",\"region\":\"新疆\"}"})
+            "{\"origin\":\"北京\",\"origin\":\"上海\"}", "{\"destination\":\"北京\",\"region\":\"新疆\"}",
+            "{\"stops\":[{\"place\":\"天津\",\"action\":\"STOP\",\"position\":\"FIRST\",\"relativeTo\":\"济南\"}]}",
+            "{\"stops\":[{\"place\":\"天津\",\"action\":\"STOP\",\"relativeTo\":\"济南\"}]}",
+            "{\"stops\":[{\"place\":\"天津\",\"action\":\"REMOVE\",\"position\":\"BEFORE\"}]}"})
     void rejectsBlankTruncatedOrInvalidContent(String content) throws Exception {
         var service = new AiIntentService("", null, "fixture", mapper, BEIJING, Duration.ofSeconds(1));
         assertEquals(ErrorCode.AI_INVALID_RESPONSE, assertThrows(ApiException.class,
                 () -> service.decode(response("stop", content), LocalDate.now(BEIJING))).code());
+    }
+
+    @Test
+    void preservesRelativePositionAndAllowsMissingAnchorForClarification() throws IOException {
+        var service = new AiIntentService("", null, "fixture", mapper, BEIJING, Duration.ofSeconds(1));
+        byte[] body = response("stop", """
+                {"stops":[{"place":"天津","action":"STOP","stayDays":1,"position":"BEFORE","relativeTo":"济南"},
+                          {"place":"郑州","action":"UNCLEAR","position":"AFTER"}]}
+                """);
+        assertEquals(List.of(new AiIntentService.Stop("天津", "STOP", 1, "BEFORE", "济南"),
+                new AiIntentService.Stop("郑州", "UNCLEAR", null, "AFTER", null)),
+                service.decode(body, LocalDate.now(BEIJING)).stops());
     }
 
     @Test
